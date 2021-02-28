@@ -18,7 +18,7 @@
         root = pkgs.root;
       in
       {
-        devShell = pkgs.mkShell {
+        devShell = pkgs.mkShell rec {
           name = "TrackerOnlyEmu";
           buildInputs = with pythonPackages; [
             pkgs.clang-tools # For clang-format
