@@ -9,6 +9,8 @@
 #include <string>
 #include <vector>
 
+#include <TMath.h>
+
 using std::cout;
 using std::endl;
 using std::map;
@@ -75,15 +77,41 @@ bool hlt1TwoTrackMVADec( double VDCHI2, double SUMPT, double VCHI2,
   return false;
 }
 
-bool hlt1TwoTrackMVATriggerEmu( vector<map<string, double> >& TrackSpec,
-                                vector<map<string, double> >& CombSpec,
+bool hlt1TwoTrackMVATriggerEmu( vector<map<string, double> >& trackSpec,
+                                vector<map<string, double> >& combSpec,
                                 int                           year ) {
-  for ( auto comb : CombSpec ) {
-    auto ComDec = hlt1TwoTrackMVADec(
+  // This is used to compare reference SUMPT extracted from BDT and sum of PT
+  // from two tracks. If the difference is below threshold, we consider them as
+  // the same combo.
+  double sumPtThresh = 10;  // in MeV
+
+  for ( auto comb : combSpec ) {
+    auto combDec = hlt1TwoTrackMVADec(
         comb["VDCHI2"], comb["SUMPT"], comb["VCHI2"], comb["BPVETA"],
         comb["BPVCORRM"], comb["BPVDIRA"], comb["MVA"], year );
-    if ( ComDec ) {
-      for ( auto track : TrackSpec ) {
+    if ( combDec ) {
+      double refSumPt = comb["SUMPT"];
+      for ( auto idxSet : combination( trackSpec.size(), 2 ) ) {
+        double trackSumPt;
+        for ( auto idx : idxSet ) {
+          trackSumPt += trackSpec[idx]["SUMPT"];
+        }
+
+        if ( TMath::Abs( trackSumPt - refSumPt ) <= sumPtThresh ) {
+          // We found the two tracks that pass the TwoTrackMVA selection
+          bool trackDec = true;
+          for ( auto idx : idxSet ) {
+            // See if both tracks pass tracking selection
+            auto track = trackSpec[idx];
+            trackDec =
+                ( trackDec &&
+                  hlt1TwoTrackInputDec( track["PT"], track["P"],
+                                        track["TRCHI2DOF"], track["BPVIPCHI2"],
+                                        track["TRGHOSTPROB"], year ) );
+          }
+
+          if ( trackDec ) return true;
+        }
       }
     }
   }
