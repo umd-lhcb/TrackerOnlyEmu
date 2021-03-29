@@ -94,7 +94,7 @@ bool hlt1TwoTrackMVATriggerEmu( vector<map<string, double> >& trackSpec,
       for ( auto idxSet : combination( trackSpec.size(), 2 ) ) {
         double trackSumPt;
         for ( auto idx : idxSet ) {
-          trackSumPt += trackSpec[idx]["SUMPT"];
+          trackSumPt += trackSpec[idx]["PT"];
         }
 
         if ( TMath::Abs( trackSumPt - refSumPt ) <= sumPtThresh ) {
