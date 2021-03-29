@@ -1,13 +1,36 @@
 #!/usr/bin/env python
 #
 # Author: Yipeng Sun
-# Last Change: Mon Mar 29, 2021 at 04:13 AM +0200
+# Last Change: Mon Mar 29, 2021 at 04:36 AM +0200
 
 from ROOT import TFile, TTree, gInterpreter, RDataFrame
 from ROOT.std import vector
 
 from argparse import ArgumentParser
 from itertools import combinations
+
+
+#################
+# Configurables #
+#################
+
+TRACK_SPEC_BRANCHES = {
+    'PT':  'PT',
+    'P': 'P',
+    'TRCHI2DOF': 'TRACK_CHI2NDOF',
+    'BPVIPCHI2': 'IPCHI2_OWNPV',
+    'TRCHOSTPROB': 'TRACK_GhostProb'
+}
+
+COMB_SPEC_BRANCHES = {
+    'VDCHI2': 'VDCHI2_OWNPV_COMB',
+    'SUMPT': 'SUMPT_COMB',
+    'VCHI2': 'VERTEX_CHI2_COMB',
+    'BPVETA': 'ETA_COMB',
+    'BPVCORRM': 'MCORR_OWNPV_COMB',
+    'BPVDIRA': 'DIRA_OWNPV_COMB',
+    'MVA': 'Matrixnet_Hlt1TwoTrackMVAEmulations'
+}
 
 
 #################################
@@ -89,27 +112,9 @@ if __name__ == '__main__':
 
     df0 = RDataFrame(tree)
     df1 = df0.Define(
-        'track_spec', track_spec_gen(
-            ['k', 'pi', 'spi'],
-            {'PT':  'PT',
-             'P': 'P',
-             'TRCHI2DOF': 'TRACK_CHI2NDOF',
-             'BPVIPCHI2': 'IPCHI2_OWNPV',
-             'TRCHOSTPROB': 'TRACK_GhostProb'}
-        ))
+        'track_spec', track_spec_gen(['k', 'pi', 'spi'], TRACK_SPEC_BRANCHES))
     df2 = df1.Define(
-        'comb_spec', comb_spec_gen(
-            'b0',
-            {'VDCHI2': 'VDCHI2_OWNPV_COMB',
-             'SUMPT': 'SUMPT_COMB',
-             'VCHI2': 'VERTEX_CHI2_COMB',
-             'BPVETA': 'ETA_COMB',
-             'BPVCORRM': 'MCORR_OWNPV_COMB',
-             'DIRA': 'DIRA_OWNPV_COMB',
-             'MVA': 'Matrixnet_Hlt1TwoTrackMVAEmulations'},
-            range(1, 4)
-        )
-    )
+        'comb_spec', comb_spec_gen('b0', COMB_SPEC_BRANCHES, range(1, 4)))
 
     # Debug
     df3 = df2.Define('hlt1_two_trk_mva_tos',
