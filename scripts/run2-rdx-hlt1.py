@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 #
 # Author: Yipeng Sun
-# Last Change: Mon Mar 29, 2021 at 03:45 AM +0200
+# Last Change: Mon Mar 29, 2021 at 04:13 AM +0200
 
 from ROOT import TFile, TTree, gInterpreter, RDataFrame
+from ROOT.std import vector
 
 from argparse import ArgumentParser
 from itertools import combinations
@@ -84,7 +85,6 @@ if __name__ == '__main__':
     else:
         ntp = TFile.Open(args.ntp, 'update')
 
-    print(args.tree)
     tree = ntp.Get(args.tree)
 
     df0 = RDataFrame(tree)
@@ -110,3 +110,28 @@ if __name__ == '__main__':
             range(1, 4)
         )
     )
+
+    # Debug
+    df3 = df2.Define('hlt1_two_trk_mva_tos',
+                     'hlt1TwoTrackMVATriggerEmu(track_spec, comb_spec, 2016)')
+
+    df4 = df3.Define('comb_trigger_1_2',
+                     'hlt1TwoTrackMVADec(b0_VDCHI2_OWNPV_COMB_1_2, b0_SUMPT_COMB_1_2, b0_VERTEX_CHI2_COMB_1_2, b0_ETA_COMB_1_2, b0_MCORR_OWNPV_COMB_1_2, b0_DIRA_OWNPV_COMB_1_2, b0_Matrixnet_Hlt1TwoTrackMVAEmulations_1_2, 2016)')
+
+    df5 = df4.Define('track_trigger_1',
+                     'hlt1TwoTrackInputDec(k_PT, k_P, k_TRACK_CHI2NDOF, k_IPCHI2_OWNPV, k_TRACK_GhostProb, 2016)')
+    df6 = df5.Define('track_trigger_2',
+                     'hlt1TwoTrackInputDec(pi_PT, pi_P, pi_TRACK_CHI2NDOF, pi_IPCHI2_OWNPV, pi_TRACK_GhostProb, 2016)')
+
+    df7 = df6.Define('track_trigger_3',
+                     'hlt1TwoTrackInputDec(spi_PT, spi_P, spi_TRACK_CHI2NDOF, spi_IPCHI2_OWNPV, spi_TRACK_GhostProb, 2016)')
+
+    output_branch_names = vector('string')()
+    output_branch_names.push_back('hlt1_two_trk_mva_tos')
+    output_branch_names.push_back('comb_trigger_1_2')
+    output_branch_names.push_back('track_trigger_1')
+    output_branch_names.push_back('track_trigger_2')
+    output_branch_names.push_back('track_trigger_3')
+
+    # Output
+    df7.Snapshot('tree', args.output, output_branch_names)
