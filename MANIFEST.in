@@ -1,0 +1,2 @@
+include TrackerOnlyEmu/triggers/hlt1/*.h
+include TrackerOnlyEmu/triggers/hlt2/*.h
