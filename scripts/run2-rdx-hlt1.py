@@ -1,15 +1,16 @@
 #!/usr/bin/env python3
 #
 # Author: Yipeng Sun
-# Last Change: Thu Apr 01, 2021 at 12:05 AM +0200
+# Last Change: Thu Apr 01, 2021 at 12:18 AM +0200
 
 from argparse import ArgumentParser
 from itertools import combinations
 
-from ROOT import TFile, TTree, gInterpreter, RDataFrame
-from ROOT.std import vector
+from ROOT import TFile, TTree, RDataFrame
 
 from TrackerOnlyEmu.loader import load_cpp
+from TrackerOnlyEmu.executor import ExecDirective as EXEC
+from TrackerOnlyEmu.executor import process_directives
 
 
 #################
@@ -121,6 +122,21 @@ def comb_spec_gen(particle, branches, suffixs):
     return 'vector<map<string, double> >{' + ', '.join(specs) + '}'
 
 
+directives = [
+    EXEC('Define', 'track_spec',
+         track_spec_gen(['k', 'pi'], TWO_TRACK_SPEC_BRANCHES)),
+    EXEC('Define', 'comb_spec',
+         comb_spec_gen('b0', TWO_TRACK_COMB_SPEC_BRANCHES, range(1, 4))),
+    EXEC('Define', 'pass_gec',
+         func_call_gen('hlt1GEC', GEC_SEL_BRANCHES), True),
+    EXEC('Define', 'vec_pass_gec',
+         'vector<bool>{pass_gec, pass_gec}'),
+    EXEC('Define', 'd0_Hlt1TwoTrackMVA_TOS',
+         'hlt1TwoTrackMVATriggerEmu(track_spec, comb_spec, vec_pass_gec, 2016)',
+         True)
+]
+
+
 if __name__ == '__main__':
     args = parse_input()
 
@@ -130,24 +146,7 @@ if __name__ == '__main__':
         ntp = TFile.Open(args.ntp, 'update')
 
     tree = ntp.Get(args.tree)
-
-    df0 = RDataFrame(tree)
-    df1 = df0.Define(
-        'track_spec', track_spec_gen(['k', 'pi'], TWO_TRACK_SPEC_BRANCHES))
-    df2 = df1.Define(
-        'comb_spec', comb_spec_gen('b0', TWO_TRACK_COMB_SPEC_BRANCHES, range(1, 4)))
-    df3 = df2.Define(
-        'pass_gec', func_call_gen('hlt1GEC', GEC_SEL_BRANCHES))
-    df4 = df3.Define(
-        'unused', func_call_gen('hlt1GEC', GEC_SEL_BRANCHES))
-    df5 = df4.Define('vec_pass_gec', 'vector<bool>{pass_gec, pass_gec}')
-
-    df6 = df5.Define('d0_Hlt1TwoTrackMVA_TOS',
-                     'hlt1TwoTrackMVATriggerEmu(track_spec, comb_spec, vec_pass_gec, 2016)')
-
-    output_branch_names = vector('string')()
-    output_branch_names.push_back('d0_Hlt1TwoTrackMVA_TOS')
-    output_branch_names.push_back('pass_gec')
+    dfs, output_br_names = process_directives(directives, RDataFrame(tree))
 
     # Output
-    df6.Snapshot('tree', args.output, output_branch_names)
+    dfs[-1].Snapshot('tree', args.output, output_br_names)
