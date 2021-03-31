@@ -55,22 +55,22 @@ bool hlt1TwoTrackMVADec( double VDCHI2, double SUMPT, double VCHI2,
                          double BPVETA, double BPVCORRM, double BPVDIRA,
                          double MVA, double DOCA, int year ) {
   // VDCHI2: Vertex distance chi2
-  // Mindlessly copied from RD+ script:
-  //   Remove dummy values from the input to the MVA
+  // Remove dummy values from the input to the MVA
   if ( VDCHI2 <= 0 || SUMPT <= 0 ) return false;
+
   if ( year == 2015 || year == 2017 || year == 2018 ) {
     // VFASPF: Vertex functor as particle functor
-    bool sel1 = VCHI2 < 10 && ( BPVETA > 2 && BPVETA < 5 ) &&
-                ( BPVCORRM > 1000 && BPVCORRM < 1000000000 ) && BPVDIRA > 0 &&
-                MVA > 0.95;
-    bool sel2 = ( DOCA > 0 && DOCA < 10 );
-    return sel1 && sel2;
+    bool selPreVertexing = ( DOCA > 0 && DOCA < 10 ) && SUMPT > 2000;
+    bool selCombo        = VCHI2 < 10 && ( BPVETA > 2 && BPVETA < 5 ) &&
+                    ( BPVCORRM > 1000 && BPVCORRM < 1000000000 ) &&
+                    BPVDIRA > 0 && MVA > 0.95;
+    return selPreVertexing && selCombo;
   } else if ( year == 2016 ) {
-    bool sel1 = VCHI2 < 10 && ( BPVETA > 2 && BPVETA < 5 ) &&
-                ( BPVCORRM > 100 && BPVCORRM < 1000000000 ) && BPVDIRA > 0 &&
-                MVA > 0.97;
-    bool sel2 = ( DOCA > 0 && DOCA < 10 );
-    return sel1 && sel2;
+    bool selPreVertexing = ( DOCA > 0 && DOCA < 10 ) && SUMPT > 2000;
+    bool selCombo        = VCHI2 < 10 && ( BPVETA > 2 && BPVETA < 5 ) &&
+                    ( BPVCORRM > 100 && BPVCORRM < 1000000000 ) &&
+                    BPVDIRA > 0 && MVA > 0.97;
+    return selPreVertexing && selCombo;
   } else {
     cout << "Year: " << year << " not recognized." << endl;
   }
