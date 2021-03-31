@@ -1,6 +1,6 @@
 // Stolen from:
 //   https://gitlab.cern.ch/lhcb-slb/B02DplusTauNu/-/blob/master/tuple_processing_chain/emulate_HLT1_cuts.py
-// Last Change: Thu Apr 01, 2021 at 12:52 AM +0200
+// Last Change: Thu Apr 01, 2021 at 01:27 AM +0200
 
 #ifndef _RUN2_HLT1_TWOTRACKMVA_
 #define _RUN2_HLT1_TWOTRACKMVA_
@@ -37,6 +37,8 @@ vector<vector<int> > combination( int totSize, int combSize,
 
 bool hlt1TwoTrackInputDec( double PT, double P, double TRCHI2DOF,
                            double BPVIPCHI2, double TRGHOSTPROB, int year ) {
+  if ( TRCHI2DOF <= 0 ) return false;
+
   if ( year == 2015 ) {
     if ( PT > 500 && P > 5000 && TRCHI2DOF < 2.5 && BPVIPCHI2 > 4.0 )
       return true;
