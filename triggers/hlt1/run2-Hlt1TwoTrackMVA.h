@@ -53,24 +53,24 @@ bool hlt1TwoTrackInputDec( double PT, double P, double TRCHI2DOF,
 
 bool hlt1TwoTrackMVADec( double VDCHI2, double SUMPT, double VCHI2,
                          double BPVETA, double BPVCORRM, double BPVDIRA,
-                         double MVA, int year ) {
+                         double MVA, double DOCA, int year ) {
   // VDCHI2: Vertex distance chi2
   // Mindlessly copied from RD+ script:
   //   Remove dummy values from the input to the MVA
   if ( VDCHI2 <= 0 || SUMPT <= 0 ) return false;
   if ( year == 2015 || year == 2017 || year == 2018 ) {
     // VFASPF: Vertex functor as particle functor
-    if ( VCHI2 < 10 && ( BPVETA > 2 && BPVETA < 5 ) &&
-         ( BPVCORRM > 1000 && BPVCORRM < 1000000000 ) && BPVDIRA > 0 &&
-         MVA > 0.95 )
-      return true;
-    return false;
+    bool sel1 = VCHI2 < 10 && ( BPVETA > 2 && BPVETA < 5 ) &&
+                ( BPVCORRM > 1000 && BPVCORRM < 1000000000 ) && BPVDIRA > 0 &&
+                MVA > 0.95;
+    bool sel2 = ( DOCA > 0 && DOCA < 10 );
+    return sel1 && sel2;
   } else if ( year == 2016 ) {
-    if ( VCHI2 < 10 && ( BPVETA > 2 && BPVETA < 5 ) &&
-         ( BPVCORRM > 100 && BPVCORRM < 1000000000 ) && BPVDIRA > 0 &&
-         MVA > 0.97 )
-      return true;
-    return false;
+    bool sel1 = VCHI2 < 10 && ( BPVETA > 2 && BPVETA < 5 ) &&
+                ( BPVCORRM > 100 && BPVCORRM < 1000000000 ) && BPVDIRA > 0 &&
+                MVA > 0.97;
+    bool sel2 = ( DOCA > 0 && DOCA < 10 );
+    return sel1 && sel2;
   } else {
     cout << "Year: " << year << " not recognized." << endl;
   }
@@ -79,7 +79,7 @@ bool hlt1TwoTrackMVADec( double VDCHI2, double SUMPT, double VCHI2,
 
 bool hlt1TwoTrackMVATriggerEmu( vector<map<string, double> >& trackSpec,
                                 vector<map<string, double> >& combSpec,
-                                int                           year ) {
+                                vector<bool>& trackPassSel, int year ) {
   // This is used to compare reference SUMPT extracted from BDT and sum of PT
   // from two tracks. If the difference is below threshold, we consider them as
   // the same combo.
@@ -88,7 +88,7 @@ bool hlt1TwoTrackMVATriggerEmu( vector<map<string, double> >& trackSpec,
   for ( auto comb : combSpec ) {
     auto combDec = hlt1TwoTrackMVADec(
         comb["VDCHI2"], comb["SUMPT"], comb["VCHI2"], comb["BPVETA"],
-        comb["BPVCORRM"], comb["BPVDIRA"], comb["MVA"], year );
+        comb["BPVCORRM"], comb["BPVDIRA"], comb["MVA"], comb["DOCA"], year );
     if ( combDec ) {
       double refSumPt = comb["SUMPT"];
       for ( auto idxSet : combination( trackSpec.size(), 2 ) ) {
@@ -108,19 +108,15 @@ bool hlt1TwoTrackMVATriggerEmu( vector<map<string, double> >& trackSpec,
                   hlt1TwoTrackInputDec( track["PT"], track["P"],
                                         track["TRCHI2DOF"], track["BPVIPCHI2"],
                                         track["TRGHOSTPROB"], year ) );
+            // Also consider external track selection requirements
+            trackDec = ( trackDec && trackPassSel[idx] );
           }
 
-          if ( trackDec ) return true;
+          return trackDec;
         }
       }
     }
   }
-  return false;
-}
-
-bool hlt1TwoTrackMVATriggerEmu( vector<map<string, double> >& TrackSpec,
-                                vector<map<string, double> >& CombSpec,
-                                vector<bool>& TrackRecoSpec, int year ) {
   return false;
 }
 
