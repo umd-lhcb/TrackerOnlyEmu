@@ -1,6 +1,6 @@
 // Stolen from:
 //   https://gitlab.cern.ch/lhcb-slb/B02DplusTauNu/-/blob/master/tuple_processing_chain/emulate_HLT1_cuts.py
-// Last Change: Wed Mar 31, 2021 at 03:17 AM +0200
+// Last Change: Thu Apr 01, 2021 at 12:52 AM +0200
 
 #ifndef _RUN2_HLT1_TWOTRACKMVA_
 #define _RUN2_HLT1_TWOTRACKMVA_
@@ -52,22 +52,24 @@ bool hlt1TwoTrackInputDec( double PT, double P, double TRCHI2DOF,
   return false;
 }
 
-bool hlt1TwoTrackMVADec( double VDCHI2, double SUMPT, double VCHI2,
+bool hlt1TwoTrackMVADec( double VDCHI2, double APT, double DOCA, double VCHI2,
                          double BPVETA, double BPVCORRM, double BPVDIRA,
-                         double MVA, double DOCA, int year ) {
+                         double MVA, int year ) {
   // VDCHI2: Vertex distance chi2
-  // Remove dummy values from the input to the MVA
-  if ( VDCHI2 <= 0 || SUMPT <= 0 ) return false;
+  // APT: This is the PT of the vector sum of the particles, unlike SUMPT,
+  // which is just the scalar sum of PTs. Remove dummy values from the input to
+  // the MVA
+  if ( VDCHI2 <= 0 || APT <= 0 ) return false;
 
   if ( year == 2015 || year == 2017 || year == 2018 ) {
     // VFASPF: Vertex functor as particle functor
-    bool selPreVertexing = ( DOCA > 0 && DOCA < 10 ) && SUMPT > 2000;
+    bool selPreVertexing = ( DOCA > 0 && DOCA < 10 ) && APT > 2000;
     bool selCombo        = VCHI2 < 10 && ( BPVETA > 2 && BPVETA < 5 ) &&
                     ( BPVCORRM > 1000 && BPVCORRM < 1000000000 ) &&
                     BPVDIRA > 0 && MVA > 0.95;
     return selPreVertexing && selCombo;
   } else if ( year == 2016 ) {
-    bool selPreVertexing = ( DOCA > 0 && DOCA < 10 ) && SUMPT > 2000;
+    bool selPreVertexing = ( DOCA > 0 && DOCA < 10 ) && APT > 2000;
     bool selCombo        = VCHI2 < 10 && ( BPVETA > 2 && BPVETA < 5 ) &&
                     ( BPVCORRM > 100 && BPVCORRM < 1000000000 ) &&
                     BPVDIRA > 0 && MVA > 0.97;
@@ -84,40 +86,43 @@ bool hlt1TwoTrackMVATriggerEmu( vector<map<string, double> >& trackSpec,
   // This is used to compare reference SUMPT extracted from BDT and sum of PT
   // from two tracks. If the difference is below threshold, we consider them as
   // the same combo.
-  double sumPtThresh = 10;  // in MeV
+  double sumPtThresh = 1;  // in MeV
 
-  for ( auto comb : combSpec ) {
-    auto combDec = hlt1TwoTrackMVADec(
-        comb["VDCHI2"], comb["SUMPT"], comb["VCHI2"], comb["BPVETA"],
-        comb["BPVCORRM"], comb["BPVDIRA"], comb["MVA"], comb["DOCA"], year );
-    if ( combDec ) {
-      double refSumPt = comb["SUMPT"];
-      for ( auto idxSet : combination( trackSpec.size(), 2 ) ) {
-        double trackSumPt;
-        for ( auto idx : idxSet ) {
-          trackSumPt += trackSpec[idx]["PT"];
-        }
+  for ( auto idxSet : combination( trackSpec.size(), 2 ) ) {
+    // First check if any 2 tracks pass the per-track selection
+    bool   passPerSel = true;
+    double trackSumPt, trackSumPx, trackSumPy;
 
-        if ( TMath::Abs( trackSumPt - refSumPt ) <= sumPtThresh ) {
-          // We found the two tracks that pass the TwoTrackMVA selection
-          bool trackDec = true;
-          for ( auto idx : idxSet ) {
-            // See if both tracks pass tracking selection
-            auto track = trackSpec[idx];
-            trackDec =
-                ( trackDec &&
-                  hlt1TwoTrackInputDec( track["PT"], track["P"],
-                                        track["TRCHI2DOF"], track["BPVIPCHI2"],
-                                        track["TRGHOSTPROB"], year ) );
-            // Also consider external track selection requirements
-            trackDec = ( trackDec && trackPassSel[idx] );
-          }
+    for ( auto idx : idxSet ) {
+      auto track = trackSpec[idx];
+      passPerSel = ( passPerSel &&
+                     hlt1TwoTrackInputDec(
+                         track["PT"], track["P"], track["TRCHI2DOF"],
+                         track["BPVIPCHI2"], track["TRGHOSTPROB"], year ) );
+      trackSumPt += track["PT"];
+      trackSumPx += track["PX"];
+      trackSumPy += track["PY"];
+    }
 
-          return trackDec;
+    auto trackAPt =
+        TMath::Sqrt( trackSumPx * trackSumPx + trackSumPy * trackSumPy );
+
+    if ( passPerSel ) {
+      // Now find if these 2 tracks correspond to any set of two-track BDT
+      // variables
+
+      for ( auto comb : combSpec ) {
+        if ( TMath::Abs( comb["SUMPT"] - trackSumPt ) <= sumPtThresh ) {
+          auto passCombSel = hlt1TwoTrackMVADec(
+              comb["VDCHI2"], trackAPt, comb["DOCA"], comb["VCHI2"],
+              comb["BPVETA"], comb["BPVCORRM"], comb["BPVDIRA"], comb["MVA"],
+              year );
+          if ( passCombSel ) return true;
         }
       }
     }
   }
+
   return false;
 }
 

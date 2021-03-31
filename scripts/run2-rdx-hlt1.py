@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Author: Yipeng Sun
-# Last Change: Thu Apr 01, 2021 at 12:18 AM +0200
+# Last Change: Thu Apr 01, 2021 at 12:43 AM +0200
 
 from argparse import ArgumentParser
 from itertools import combinations
@@ -36,6 +36,8 @@ TWO_TRACK_SPEC_BRANCHES = {
     'TRCHI2DOF': 'TRACK_CHI2NDOF',
     'BPVIPCHI2': 'IPCHI2_OWNPV',
     'TRCHOSTPROB': 'TRACK_GhostProb',
+    'PX': 'PX',
+    'PY': 'PY',
 }
 
 TWO_TRACK_COMB_SPEC_BRANCHES = {
