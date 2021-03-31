@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
 #
 # Author: Yipeng Sun
-# Last Change: Wed Mar 31, 2021 at 04:05 PM +0200
+# Last Change: Thu Apr 01, 2021 at 12:05 AM +0200
+
+from argparse import ArgumentParser
+from itertools import combinations
 
 from ROOT import TFile, TTree, gInterpreter, RDataFrame
 from ROOT.std import vector
 
-from argparse import ArgumentParser
-from itertools import combinations
+from TrackerOnlyEmu.loader import load_cpp
 
 
 #################
@@ -76,14 +78,8 @@ specify output ntuple file (optional).
 # Load C++ definitions #
 ########################
 
-with open('../triggers/hlt1/run2-Hlt1TwoTrackMVA.h', 'r') as f:
-    hlt1TwoTrackMVAHeader = f.read()
-
-with open('../triggers/hlt1/run2-Hlt1GEC.h', 'r') as f:
-    hlt1GECHeader = f.read()
-
-gInterpreter.Declare(hlt1TwoTrackMVAHeader)
-gInterpreter.Declare(hlt1GECHeader)
+load_cpp('<triggers/hlt1/run2-Hlt1GEC.h>')
+load_cpp('<triggers/hlt1/run2-Hlt1TwoTrackMVA.h>')
 
 
 ##################
