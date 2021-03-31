@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #
 # Author: Yipeng Sun
-# Last Change: Mon Mar 29, 2021 at 04:36 AM +0200
+# Last Change: Wed Mar 31, 2021 at 02:49 AM +0200
 
 from ROOT import TFile, TTree, gInterpreter, RDataFrame
 from ROOT.std import vector
@@ -14,22 +14,36 @@ from itertools import combinations
 # Configurables #
 #################
 
-TRACK_SPEC_BRANCHES = {
+GEC_SEL_BRANCHES = [
+    'NumVeloClusters',
+    'NumITClusters',
+    'NumOTClusters',
+]
+
+GLOBAL_CORR_BRANCHES = [
+    'NumTTHits',  # FIXME Variable name!
+    'NumVeloClusters',
+    'NumITClusters',
+    'NumOTClusters',
+]
+
+TWO_TRACK_SPEC_BRANCHES = {
     'PT':  'PT',
     'P': 'P',
     'TRCHI2DOF': 'TRACK_CHI2NDOF',
     'BPVIPCHI2': 'IPCHI2_OWNPV',
-    'TRCHOSTPROB': 'TRACK_GhostProb'
+    'TRCHOSTPROB': 'TRACK_GhostProb',
 }
 
-COMB_SPEC_BRANCHES = {
+TWO_TRACK_COMB_SPEC_BRANCHES = {
     'VDCHI2': 'VDCHI2_OWNPV_COMB',
     'SUMPT': 'SUMPT_COMB',
     'VCHI2': 'VERTEX_CHI2_COMB',
     'BPVETA': 'ETA_COMB',
     'BPVCORRM': 'MCORR_OWNPV_COMB',
     'BPVDIRA': 'DIRA_OWNPV_COMB',
-    'MVA': 'Matrixnet_Hlt1TwoTrackMVAEmulations'
+    'MVA': 'Matrixnet_Hlt1TwoTrackMVAEmulations',
+    'DOCA': 'DOCA_COMB',
 }
 
 
@@ -65,12 +79,23 @@ specify output ntuple file (optional).
 with open('../triggers/hlt1/run2-Hlt1TwoTrackMVA.h', 'r') as f:
     hlt1TwoTrackMVAHeader = f.read()
 
+with open('../triggers/hlt1/run2-Hlt1GEC.h', 'r') as f:
+    hlt1GECHeader = f.read()
+
 gInterpreter.Declare(hlt1TwoTrackMVAHeader)
+gInterpreter.Declare(hlt1GECHeader)
 
 
 ##################
 # Apply triggers #
 ##################
+
+def func_call_gen(func, params, particle=None):
+    if particle is not None:
+        params = [particle+'_'+p for p in params]
+
+    return '{}({})'.format(func, ', '.join(params))
+
 
 def track_spec_gen(particles, branches):
     specs = []
@@ -112,31 +137,21 @@ if __name__ == '__main__':
 
     df0 = RDataFrame(tree)
     df1 = df0.Define(
-        'track_spec', track_spec_gen(['k', 'pi', 'spi'], TRACK_SPEC_BRANCHES))
+        'track_spec', track_spec_gen(['k', 'pi'], TWO_TRACK_SPEC_BRANCHES))
     df2 = df1.Define(
-        'comb_spec', comb_spec_gen('b0', COMB_SPEC_BRANCHES, range(1, 4)))
+        'comb_spec', comb_spec_gen('b0', TWO_TRACK_COMB_SPEC_BRANCHES, range(1, 4)))
+    df3 = df2.Define(
+        'pass_gec', func_call_gen('hlt1GEC', GEC_SEL_BRANCHES))
+    df4 = df3.Define(
+        'unused', func_call_gen('hlt1GEC', GEC_SEL_BRANCHES))
+    df5 = df4.Define('vec_pass_gec', 'vector<bool>{pass_gec, pass_gec}')
 
-    # Debug
-    df3 = df2.Define('hlt1_two_trk_mva_tos',
-                     'hlt1TwoTrackMVATriggerEmu(track_spec, comb_spec, 2016)')
-
-    df4 = df3.Define('comb_trigger_1_2',
-                     'hlt1TwoTrackMVADec(b0_VDCHI2_OWNPV_COMB_1_2, b0_SUMPT_COMB_1_2, b0_VERTEX_CHI2_COMB_1_2, b0_ETA_COMB_1_2, b0_MCORR_OWNPV_COMB_1_2, b0_DIRA_OWNPV_COMB_1_2, b0_Matrixnet_Hlt1TwoTrackMVAEmulations_1_2, 2016)')
-
-    df5 = df4.Define('track_trigger_1',
-                     'hlt1TwoTrackInputDec(k_PT, k_P, k_TRACK_CHI2NDOF, k_IPCHI2_OWNPV, k_TRACK_GhostProb, 2016)')
-    df6 = df5.Define('track_trigger_2',
-                     'hlt1TwoTrackInputDec(pi_PT, pi_P, pi_TRACK_CHI2NDOF, pi_IPCHI2_OWNPV, pi_TRACK_GhostProb, 2016)')
-
-    df7 = df6.Define('track_trigger_3',
-                     'hlt1TwoTrackInputDec(spi_PT, spi_P, spi_TRACK_CHI2NDOF, spi_IPCHI2_OWNPV, spi_TRACK_GhostProb, 2016)')
+    df6 = df5.Define('d0_Hlt1TwoTrackMVA_TOS',
+                     'hlt1TwoTrackMVATriggerEmu(track_spec, comb_spec, vec_pass_gec, 2016)')
 
     output_branch_names = vector('string')()
-    output_branch_names.push_back('hlt1_two_trk_mva_tos')
-    output_branch_names.push_back('comb_trigger_1_2')
-    output_branch_names.push_back('track_trigger_1')
-    output_branch_names.push_back('track_trigger_2')
-    output_branch_names.push_back('track_trigger_3')
+    output_branch_names.push_back('d0_Hlt1TwoTrackMVA_TOS')
+    output_branch_names.push_back('pass_gec')
 
     # Output
-    df7.Snapshot('tree', args.output, output_branch_names)
+    df6.Snapshot('tree', args.output, output_branch_names)
