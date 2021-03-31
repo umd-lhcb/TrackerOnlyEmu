@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Author: Yipeng Sun
-# Last Change: Thu Apr 01, 2021 at 12:43 AM +0200
+# Last Change: Thu Apr 01, 2021 at 01:26 AM +0200
 
 from argparse import ArgumentParser
 from itertools import combinations
@@ -135,7 +135,22 @@ directives = [
          'vector<bool>{pass_gec, pass_gec}'),
     EXEC('Define', 'd0_Hlt1TwoTrackMVA_TOS',
          'hlt1TwoTrackMVATriggerEmu(track_spec, comb_spec, vec_pass_gec, 2016)',
-         True)
+         True),
+
+    # Debug: TwoTrackMVA input
+    EXEC('Define', 'k_diff_chi2ndof', 'b0_TRACK_CHI2_DAU_1/b0_TRACK_NDOF_DAU_1 - k_TRACK_CHI2NDOF', True),
+    EXEC('Define', 'pi_diff_chi2ndof', 'b0_TRACK_CHI2_DAU_2/b0_TRACK_NDOF_DAU_2 - pi_TRACK_CHI2NDOF', True),
+
+    EXEC('Define', 'k_diff_p', 'b0_P_DAU_1 - k_P', True),
+    EXEC('Define', 'pi_diff_p', 'b0_P_DAU_2 - pi_P', True),
+
+    EXEC('Define', 'k_diff_pt', 'b0_PT_DAU_1 - k_PT', True),
+    EXEC('Define', 'pi_diff_pt', 'b0_PT_DAU_2 - pi_PT', True),
+
+    EXEC('Define', 'k_diff_ipchi2', 'b0_IPCHI2_OWNPV_DAU_1 - k_IPCHI2_OWNPV', True),
+    EXEC('Define', 'pi_diff_ipchi2', 'b0_IPCHI2_OWNPV_DAU_2 - pi_IPCHI2_OWNPV', True),
+
+    # Debug: TwoTrackMVA BDT input
 ]
 
 
@@ -151,4 +166,4 @@ if __name__ == '__main__':
     dfs, output_br_names = process_directives(directives, RDataFrame(tree))
 
     # Output
-    dfs[-1].Snapshot('tree', args.output, output_br_names)
+    dfs[-1].Snapshot(args.tree, args.output, output_br_names)
