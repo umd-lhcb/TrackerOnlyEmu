@@ -2,7 +2,7 @@
 #
 # Author: Yipeng Sun
 # License: BSD 2-clause
-# Last Change: Wed Mar 31, 2021 at 10:46 PM +0200
+# Last Change: Thu Apr 01, 2021 at 12:17 AM +0200
 
 from dataclasses import dataclass
 from ROOT import RDataFrame
@@ -34,7 +34,7 @@ def process_directives(directives, init_frame):
         else:
             prev_frame = frames[-1]
 
-        cur_frame = process_single_directive(getattr(prev_frame, dir.op)(),
+        cur_frame = process_single_directive(getattr(prev_frame, dir.op),
                                              dir.branch, dir.instruct)
         frames.append(cur_frame)
 
