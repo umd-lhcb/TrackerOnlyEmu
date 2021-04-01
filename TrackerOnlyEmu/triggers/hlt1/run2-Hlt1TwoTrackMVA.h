@@ -1,6 +1,7 @@
 // Stolen from:
 //   https://gitlab.cern.ch/lhcb-slb/B02DplusTauNu/-/blob/master/tuple_processing_chain/emulate_HLT1_cuts.py
-// Last Change: Thu Apr 01, 2021 at 01:27 AM +0200
+// Last Change: Thu Apr 01, 2021 at 02:03 AM +0200
+// Description: Hlt1TwoTrackMVA offline emulation
 
 #ifndef _RUN2_HLT1_TWOTRACKMVA_
 #define _RUN2_HLT1_TWOTRACKMVA_
@@ -18,6 +19,10 @@ using std::map;
 using std::string;
 using std::vector;
 
+/////////////////////
+// General helpers //
+/////////////////////
+
 vector<vector<int> > combination( int totSize, int combSize,
                                   int headIdx = 0 ) {
   vector<vector<int> > result;
@@ -34,6 +39,14 @@ vector<vector<int> > combination( int totSize, int combSize,
 
   return result;
 }
+
+double computePt( double px, double py ) {
+  return TMath::Sqrt( px * px + py * py );
+}
+
+/////////////////////
+// Hlt1TwoTrackMVA //
+/////////////////////
 
 bool hlt1TwoTrackInputDec( double PT, double P, double TRCHI2DOF,
                            double BPVIPCHI2, double TRGHOSTPROB, int year ) {
@@ -61,7 +74,9 @@ bool hlt1TwoTrackMVADec( double VDCHI2, double APT, double DOCA, double VCHI2,
   // APT: This is the PT of the vector sum of the particles, unlike SUMPT,
   // which is just the scalar sum of PTs. Remove dummy values from the input to
   // the MVA
-  if ( VDCHI2 <= 0 || APT <= 0 ) return false;
+
+  // Reject the obviously non-sensible values
+  if ( VDCHI2 <= 0 || APT <= 0 || VCHI2 <= 0 ) return false;
 
   if ( year == 2015 || year == 2017 || year == 2018 ) {
     // VFASPF: Vertex functor as particle functor
@@ -106,8 +121,7 @@ bool hlt1TwoTrackMVATriggerEmu( vector<map<string, double> >& trackSpec,
       trackSumPy += track["PY"];
     }
 
-    auto trackAPt =
-        TMath::Sqrt( trackSumPx * trackSumPx + trackSumPy * trackSumPy );
+    auto trackAPt = computePt( trackSumPx, trackSumPy );
 
     if ( passPerSel ) {
       // Now find if these 2 tracks correspond to any set of two-track BDT
