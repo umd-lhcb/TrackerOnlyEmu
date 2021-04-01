@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Author: Yipeng Sun
-# Last Change: Thu Apr 01, 2021 at 10:42 PM +0200
+# Last Change: Thu Apr 01, 2021 at 11:02 PM +0200
 
 from argparse import ArgumentParser
 from itertools import combinations
@@ -73,6 +73,10 @@ specify output ntuple file.
 specify tree name.
 ''')
 
+    parser.add_argument('-y', '--year', default='2016',
+                        help='''
+specify year.''')
+
     return parser.parse_args()
 
 
@@ -123,40 +127,41 @@ def comb_spec_gen(particle, branches, suffixs):
     return 'vector<map<string, double> >{' + ', '.join(specs) + '}'
 
 
-directives = [
-    EXEC('Define', 'track_spec',
-         track_spec_gen(['k', 'pi'], TWO_TRACK_SPEC_BRANCHES)),
-    EXEC('Define', 'comb_spec',
-         comb_spec_gen('b0', TWO_TRACK_COMB_SPEC_BRANCHES, range(1, 4))),
-    EXEC('Define', 'pass_gec',
-         func_call_gen('hlt1GEC', GEC_SEL_BRANCHES), True),
-    EXEC('Define', 'vec_pass_gec',
-         'vector<bool>{pass_gec, pass_gec}'),
-    EXEC('Define', 'd0_Hlt1TwoTrackMVA_TOS_gec',
-         'hlt1TwoTrackMVATriggerEmu(track_spec, comb_spec, vec_pass_gec, 2016)',
-         True),
-
-    # Debug: TwoTrackMVA input track cuts
-    # EXEC('Define', 'k_diff_chi2ndof',
-    #      'b0_TRACK_CHI2_DAU_1/b0_TRACK_NDOF_DAU_1 - k_TRACK_CHI2NDOF', True),
-    # EXEC('Define', 'pi_diff_chi2ndof',
-    #      'b0_TRACK_CHI2_DAU_2/b0_TRACK_NDOF_DAU_2 - pi_TRACK_CHI2NDOF', True),
-
-    # EXEC('Define', 'k_diff_p', 'b0_P_DAU_1 - k_P', True),
-    # EXEC('Define', 'pi_diff_p', 'b0_P_DAU_2 - pi_P', True),
-
-    # EXEC('Define', 'k_diff_pt', 'b0_PT_DAU_1 - k_PT', True),
-    # EXEC('Define', 'pi_diff_pt', 'b0_PT_DAU_2 - pi_PT', True),
-
-    # EXEC('Define', 'k_diff_ipchi2',
-    #      'b0_IPCHI2_OWNPV_DAU_1 - k_IPCHI2_OWNPV', True),
-    # EXEC('Define', 'pi_diff_ipchi2',
-    #      'b0_IPCHI2_OWNPV_DAU_2 - pi_IPCHI2_OWNPV', True),
-]
-
-
 if __name__ == '__main__':
     args = parse_input()
+
+    directives = [
+        EXEC('Define', 'track_spec',
+             track_spec_gen(['k', 'pi'], TWO_TRACK_SPEC_BRANCHES)),
+        EXEC('Define', 'comb_spec',
+             comb_spec_gen('b0', TWO_TRACK_COMB_SPEC_BRANCHES, range(1, 4))),
+        EXEC('Define', 'pass_gec',
+             func_call_gen('hlt1GEC', GEC_SEL_BRANCHES), True),
+        EXEC('Define', 'vec_pass_gec',
+             'vector<bool>{ pass_gec, pass_gec }'),
+        EXEC('Define', 'd0_Hlt1TwoTrackMVA_TOS_gec',
+             'hlt1TwoTrackMVATriggerEmu(track_spec, comb_spec, vec_pass_gec, {})'.format(args.year),
+             True),
+
+        # Debug: TwoTrackMVA input track cuts
+        # EXEC('Define', 'k_diff_chi2ndof',
+        #      'b0_TRACK_CHI2_DAU_1/b0_TRACK_NDOF_DAU_1 - k_TRACK_CHI2NDOF',
+        #       True),
+        # EXEC('Define', 'pi_diff_chi2ndof',
+        #      'b0_TRACK_CHI2_DAU_2/b0_TRACK_NDOF_DAU_2 - pi_TRACK_CHI2NDOF',
+        #      True),
+
+        # EXEC('Define', 'k_diff_p', 'b0_P_DAU_1 - k_P', True),
+        # EXEC('Define', 'pi_diff_p', 'b0_P_DAU_2 - pi_P', True),
+
+        # EXEC('Define', 'k_diff_pt', 'b0_PT_DAU_1 - k_PT', True),
+        # EXEC('Define', 'pi_diff_pt', 'b0_PT_DAU_2 - pi_PT', True),
+
+        # EXEC('Define', 'k_diff_ipchi2',
+        #      'b0_IPCHI2_OWNPV_DAU_1 - k_IPCHI2_OWNPV', True),
+        # EXEC('Define', 'pi_diff_ipchi2',
+        #      'b0_IPCHI2_OWNPV_DAU_2 - pi_IPCHI2_OWNPV', True),
+    ]
 
     init_frame = RDataFrame(args.tree, args.input)
     dfs, output_br_names = process_directives(directives, init_frame)
