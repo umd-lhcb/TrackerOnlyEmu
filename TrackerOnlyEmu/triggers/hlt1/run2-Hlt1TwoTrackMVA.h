@@ -1,6 +1,6 @@
 // Stolen from:
 //   https://gitlab.cern.ch/lhcb-slb/B02DplusTauNu/-/blob/master/tuple_processing_chain/emulate_HLT1_cuts.py
-// Last Change: Thu Apr 01, 2021 at 02:03 AM +0200
+// Last Change: Thu Apr 01, 2021 at 10:58 PM +0200
 // Description: Hlt1TwoTrackMVA offline emulation
 
 #ifndef _RUN2_HLT1_TWOTRACKMVA_
@@ -116,6 +116,7 @@ bool hlt1TwoTrackMVATriggerEmu( vector<map<string, double> >& trackSpec,
                      hlt1TwoTrackInputDec(
                          track["PT"], track["P"], track["TRCHI2DOF"],
                          track["BPVIPCHI2"], track["TRGHOSTPROB"], year ) );
+      passPerSel = ( passPerSel && trackPassSel[idx] );
       trackSumPt += track["PT"];
       trackSumPx += track["PX"];
       trackSumPy += track["PY"];
