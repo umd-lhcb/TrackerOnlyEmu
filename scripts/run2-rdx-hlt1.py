@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Author: Yipeng Sun
-# Last Change: Thu Apr 01, 2021 at 11:02 PM +0200
+# Last Change: Fri Apr 02, 2021 at 01:03 AM +0200
 
 from argparse import ArgumentParser
 from itertools import combinations
@@ -28,6 +28,14 @@ GLOBAL_CORR_BRANCHES = [
     'NumVeloClusters',
     'NumITClusters',
     'NumOTClusters',
+]
+
+TRACK_SEL_BRANCHES = [
+    'PT',
+    'P',
+    'TRACK_CHI2NDOF',
+    'IPCHI2_OWNPV',
+    'TRACK_GhostProb'
 ]
 
 TWO_TRACK_SPEC_BRANCHES = {
@@ -85,6 +93,7 @@ specify year.''')
 ########################
 
 load_cpp('<triggers/hlt1/run2-Hlt1GEC.h>')
+load_cpp('<triggers/hlt1/run2-Hlt1TrackMVA.h>')
 load_cpp('<triggers/hlt1/run2-Hlt1TwoTrackMVA.h>')
 
 
@@ -131,15 +140,27 @@ if __name__ == '__main__':
     args = parse_input()
 
     directives = [
+        EXEC('Define', 'pass_gec',
+             func_call_gen('hlt1GEC', GEC_SEL_BRANCHES), True),
+
+        # Hlt1TrackMVA emulation
+        EXEC('Define', 'k_hlt1_trackmva_tos',
+             func_call_gen(
+                 'hlt1TrackMVATriggerEmu',
+                 ['k_'+n for n in TRACK_SEL_BRANCHES] + [args.year]), True),
+        EXEC('Define', 'pi_hlt1_trackmva_tos',
+             func_call_gen(
+                 'hlt1TrackMVATriggerEmu',
+                 ['pi_'+n for n in TRACK_SEL_BRANCHES] + [args.year]), True),
+
+        # Hlt1TwoTrackMVA emulation
+        EXEC('Define', 'vec_pass_gec',
+             'vector<bool>{ pass_gec, pass_gec }'),
         EXEC('Define', 'track_spec',
              track_spec_gen(['k', 'pi'], TWO_TRACK_SPEC_BRANCHES)),
         EXEC('Define', 'comb_spec',
              comb_spec_gen('b0', TWO_TRACK_COMB_SPEC_BRANCHES, range(1, 4))),
-        EXEC('Define', 'pass_gec',
-             func_call_gen('hlt1GEC', GEC_SEL_BRANCHES), True),
-        EXEC('Define', 'vec_pass_gec',
-             'vector<bool>{ pass_gec, pass_gec }'),
-        EXEC('Define', 'd0_Hlt1TwoTrackMVA_TOS_gec',
+        EXEC('Define', 'd0_hlt1_twotrackmva_tos_gec',
              'hlt1TwoTrackMVATriggerEmu(track_spec, comb_spec, vec_pass_gec, {})'.format(args.year),
              True),
 
