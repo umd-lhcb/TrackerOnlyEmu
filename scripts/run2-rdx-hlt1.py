@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Author: Yipeng Sun
-# Last Change: Thu Apr 01, 2021 at 10:27 PM +0200
+# Last Change: Thu Apr 01, 2021 at 10:42 PM +0200
 
 from argparse import ArgumentParser
 from itertools import combinations
@@ -166,4 +166,4 @@ if __name__ == '__main__':
     output_br_names.push_back('eventNumber')
 
     # Output
-    dfs[-1].Snapshot('tree', args.output, output_br_names)
+    dfs[-1].Snapshot(args.tree, args.output, output_br_names)
