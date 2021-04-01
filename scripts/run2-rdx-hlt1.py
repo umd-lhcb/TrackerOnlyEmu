@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 #
 # Author: Yipeng Sun
-# Last Change: Thu Apr 01, 2021 at 01:26 AM +0200
+# Last Change: Thu Apr 01, 2021 at 10:27 PM +0200
 
 from argparse import ArgumentParser
 from itertools import combinations
 
-from ROOT import TFile, TTree, RDataFrame
+from ROOT import RDataFrame
 
 from TrackerOnlyEmu.loader import load_cpp
 from TrackerOnlyEmu.executor import ExecDirective as EXEC
@@ -43,12 +43,12 @@ TWO_TRACK_SPEC_BRANCHES = {
 TWO_TRACK_COMB_SPEC_BRANCHES = {
     'VDCHI2': 'VDCHI2_OWNPV_COMB',
     'SUMPT': 'SUMPT_COMB',
+    'DOCA': 'DOCA_COMB',
     'VCHI2': 'VERTEX_CHI2_COMB',
     'BPVETA': 'ETA_COMB',
     'BPVCORRM': 'MCORR_OWNPV_COMB',
     'BPVDIRA': 'DIRA_OWNPV_COMB',
     'MVA': 'Matrixnet_Hlt1TwoTrackMVAEmulations',
-    'DOCA': 'DOCA_COMB',
 }
 
 
@@ -58,20 +58,19 @@ TWO_TRACK_COMB_SPEC_BRANCHES = {
 
 def parse_input():
     parser = ArgumentParser(
-        description='Apply Hlt1{Track,TwoTrack}MVA triggers.')
+        description='Emulate Hlt1{Track,TwoTrack}MVA triggers.')
 
-    parser.add_argument('ntp', help='''
+    parser.add_argument('input', help='''
 specify input ntuple file.
+''')
+
+    parser.add_argument('output', help='''
+specify output ntuple file.
 ''')
 
     parser.add_argument('-t', '--tree', default='TupleB0/DecayTree',
                         help='''
 specify tree name.
-''')
-
-    parser.add_argument('-o', '--output', default=None,
-                        help='''
-specify output ntuple file (optional).
 ''')
 
     return parser.parse_args()
@@ -133,37 +132,38 @@ directives = [
          func_call_gen('hlt1GEC', GEC_SEL_BRANCHES), True),
     EXEC('Define', 'vec_pass_gec',
          'vector<bool>{pass_gec, pass_gec}'),
-    EXEC('Define', 'd0_Hlt1TwoTrackMVA_TOS',
+    EXEC('Define', 'd0_Hlt1TwoTrackMVA_TOS_gec',
          'hlt1TwoTrackMVATriggerEmu(track_spec, comb_spec, vec_pass_gec, 2016)',
          True),
 
-    # Debug: TwoTrackMVA input
-    EXEC('Define', 'k_diff_chi2ndof', 'b0_TRACK_CHI2_DAU_1/b0_TRACK_NDOF_DAU_1 - k_TRACK_CHI2NDOF', True),
-    EXEC('Define', 'pi_diff_chi2ndof', 'b0_TRACK_CHI2_DAU_2/b0_TRACK_NDOF_DAU_2 - pi_TRACK_CHI2NDOF', True),
+    # Debug: TwoTrackMVA input track cuts
+    # EXEC('Define', 'k_diff_chi2ndof',
+    #      'b0_TRACK_CHI2_DAU_1/b0_TRACK_NDOF_DAU_1 - k_TRACK_CHI2NDOF', True),
+    # EXEC('Define', 'pi_diff_chi2ndof',
+    #      'b0_TRACK_CHI2_DAU_2/b0_TRACK_NDOF_DAU_2 - pi_TRACK_CHI2NDOF', True),
 
-    EXEC('Define', 'k_diff_p', 'b0_P_DAU_1 - k_P', True),
-    EXEC('Define', 'pi_diff_p', 'b0_P_DAU_2 - pi_P', True),
+    # EXEC('Define', 'k_diff_p', 'b0_P_DAU_1 - k_P', True),
+    # EXEC('Define', 'pi_diff_p', 'b0_P_DAU_2 - pi_P', True),
 
-    EXEC('Define', 'k_diff_pt', 'b0_PT_DAU_1 - k_PT', True),
-    EXEC('Define', 'pi_diff_pt', 'b0_PT_DAU_2 - pi_PT', True),
+    # EXEC('Define', 'k_diff_pt', 'b0_PT_DAU_1 - k_PT', True),
+    # EXEC('Define', 'pi_diff_pt', 'b0_PT_DAU_2 - pi_PT', True),
 
-    EXEC('Define', 'k_diff_ipchi2', 'b0_IPCHI2_OWNPV_DAU_1 - k_IPCHI2_OWNPV', True),
-    EXEC('Define', 'pi_diff_ipchi2', 'b0_IPCHI2_OWNPV_DAU_2 - pi_IPCHI2_OWNPV', True),
-
-    # Debug: TwoTrackMVA BDT input
+    # EXEC('Define', 'k_diff_ipchi2',
+    #      'b0_IPCHI2_OWNPV_DAU_1 - k_IPCHI2_OWNPV', True),
+    # EXEC('Define', 'pi_diff_ipchi2',
+    #      'b0_IPCHI2_OWNPV_DAU_2 - pi_IPCHI2_OWNPV', True),
 ]
 
 
 if __name__ == '__main__':
     args = parse_input()
 
-    if args.output is not None:
-        ntp = TFile.Open(args.ntp, 'read')
-    else:
-        ntp = TFile.Open(args.ntp, 'update')
+    init_frame = RDataFrame(args.tree, args.input)
+    dfs, output_br_names = process_directives(directives, init_frame)
 
-    tree = ntp.Get(args.tree)
-    dfs, output_br_names = process_directives(directives, RDataFrame(tree))
+    # Always keep run and event numbers
+    output_br_names.push_back('runNumber')
+    output_br_names.push_back('eventNumber')
 
     # Output
-    dfs[-1].Snapshot(args.tree, args.output, output_br_names)
+    dfs[-1].Snapshot('tree', args.output, output_br_names)
