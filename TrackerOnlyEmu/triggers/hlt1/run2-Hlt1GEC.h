@@ -22,7 +22,7 @@ bool onlineTrackRecoEffCorr( double nTTHits ) {
 
 bool hlt1GEC( double nVeloClusters, double nITClusters, double nOTClusters ) {
   if ( ( nVeloClusters > 50 && nVeloClusters < 6000 ) &&
-       ( nITClusters > 50 && nITClusters < 6000 ) &&
+       ( nITClusters > 50 && nITClusters < 3000 ) &&
        ( nOTClusters > 50 && nOTClusters < 15000 ) )
     return true;
   return false;
