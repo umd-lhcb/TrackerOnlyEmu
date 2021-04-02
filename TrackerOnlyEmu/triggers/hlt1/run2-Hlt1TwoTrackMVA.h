@@ -1,6 +1,6 @@
 // Stolen from:
 //   https://gitlab.cern.ch/lhcb-slb/B02DplusTauNu/-/blob/master/tuple_processing_chain/emulate_HLT1_cuts.py
-// Last Change: Thu Apr 01, 2021 at 10:58 PM +0200
+// Last Change: Fri Apr 02, 2021 at 03:18 PM +0200
 // Description: Hlt1TwoTrackMVA offline emulation
 
 #ifndef _RUN2_HLT1_TWOTRACKMVA_
@@ -103,7 +103,7 @@ bool hlt1TwoTrackMVATriggerEmu( vector<map<string, double> >& trackSpec,
   // This is used to compare reference SUMPT extracted from BDT and sum of PT
   // from two tracks. If the difference is below threshold, we consider them as
   // the same combo.
-  double sumPtThresh = 1;  // in MeV
+  const double sumPtThresh = 1;  // in MeV
 
   for ( auto idxSet : combination( trackSpec.size(), 2 ) ) {
     // First check if any 2 tracks pass the per-track selection
