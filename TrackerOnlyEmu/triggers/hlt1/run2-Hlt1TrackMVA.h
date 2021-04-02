@@ -44,7 +44,7 @@ bool hlt1TrackMVADec( double PT, double P, double TRCHI2DOF, double BPVIPCHI2,
                       double TRGHOSTPROB, int year ) {
   if ( TRCHI2DOF <= 0 || BPVIPCHI2 <= 0 ) return false;
 
-  if ( year == 2015 || year == 2017 || year == 2018 ) {
+  if ( year == 2015 ) {
     if ( TRCHI2DOF >= 2.5 ) return false;
     if ( ( PT > 25000 && BPVIPCHI2 > 7.4 ) ||
          ( ( PT > 1000 && PT < 25000 ) &&
