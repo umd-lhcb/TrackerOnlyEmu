@@ -76,7 +76,7 @@ bool hlt1TwoTrackMVADec( double VDCHI2, double APT, double DOCA, double VCHI2,
   // the MVA
 
   // Reject the obviously non-sensible values
-  if ( VDCHI2 <= 0 || APT <= 0 || VCHI2 <= 0 ) return false;
+  if ( VDCHI2 <= 0 || APT <= 0 || VCHI2 <= 0 || BPVCORRM <= 0 ) return false;
 
   if ( year == 2015 || year == 2017 || year == 2018 ) {
     // VFASPF: Vertex functor as particle functor
