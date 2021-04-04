@@ -1,6 +1,6 @@
 // Stolen from:
 //   https://gitlab.cern.ch/lhcb-slb/B02DplusTauNu/-/blob/master/tuple_processing_chain/emulate_HLT1_cuts.py
-// Last Change: Fri Apr 02, 2021 at 03:18 PM +0200
+// Last Change: Mon Apr 05, 2021 at 01:23 AM +0200
 // Description: Hlt1TwoTrackMVA offline emulation
 
 #ifndef _RUN2_HLT1_TWOTRACKMVA_
@@ -100,13 +100,18 @@ bool hlt1TwoTrackMVADec( double VDCHI2, double APT, double DOCA, double VCHI2,
 bool hlt1TwoTrackMVATriggerEmu( vector<map<string, double> >& trackSpec,
                                 vector<map<string, double> >& combSpec,
                                 vector<bool>& trackPassSel, int year ) {
+  // For each track, we assemble some of its variables in a map of the form:
+  //   {{"PT", k_PT}, {"TRCHI2DOF": k_TRACK_CHI2NDOF}, ... }
+  // Similar for combSpec, but we assemble variables of a two-track combo in a
+  // map.
+
   // This is used to compare reference SUMPT extracted from BDT and sum of PT
   // from two tracks. If the difference is below threshold, we consider them as
   // the same combo.
   const double sumPtThresh = 1;  // in MeV
 
+  // First check if any 2 tracks pass the per-track selection
   for ( auto idxSet : combination( trackSpec.size(), 2 ) ) {
-    // First check if any 2 tracks pass the per-track selection
     bool   passPerSel = true;
     double trackSumPt, trackSumPx, trackSumPy;
 
@@ -117,16 +122,16 @@ bool hlt1TwoTrackMVATriggerEmu( vector<map<string, double> >& trackSpec,
                          track["PT"], track["P"], track["TRCHI2DOF"],
                          track["BPVIPCHI2"], track["TRGHOSTPROB"], year ) );
       passPerSel = ( passPerSel && trackPassSel[idx] );
-      trackSumPt += track["PT"];
-      trackSumPx += track["PX"];
-      trackSumPy += track["PY"];
+      trackSumPt += track["PT"];  // Used to match tracks to 2-track combo
+      trackSumPx += track["PX"];  // Used to compute APT
+      trackSumPy += track["PY"];  // ^^
     }
 
     auto trackAPt = computePt( trackSumPx, trackSumPy );
 
     if ( passPerSel ) {
-      // Now find if these 2 tracks correspond to any set of two-track BDT
-      // variables
+      // Now find if these 2 tracks correspond to any two-track combo
+      // By 'two-track combo', I mean variables like b0_SUMPT_COMBO_1_2
 
       for ( auto comb : combSpec ) {
         if ( TMath::Abs( comb["SUMPT"] - trackSumPt ) <= sumPtThresh ) {
