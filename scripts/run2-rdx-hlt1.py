@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Author: Yipeng Sun
-# Last Change: Fri Apr 02, 2021 at 01:03 AM +0200
+# Last Change: Fri Apr 09, 2021 at 03:02 AM +0200
 
 from argparse import ArgumentParser
 from itertools import combinations
@@ -85,6 +85,10 @@ specify tree name.
                         help='''
 specify year.''')
 
+    parser.add_argument('--debug', action='store_true', help='''
+enable debug mode.
+''')
+
     return parser.parse_args()
 
 
@@ -152,6 +156,8 @@ if __name__ == '__main__':
              func_call_gen(
                  'hlt1TrackMVATriggerEmu',
                  ['pi_'+n for n in TRACK_SEL_BRANCHES] + [args.year]), True),
+        EXEC('Define', 'd0_hlt1_trackmva_tos',
+             'k_hlt1_trackmva_tos || pi_hlt1_trackmva_tos', True),
 
         # Hlt1TwoTrackMVA emulation
         EXEC('Define', 'vec_pass_gec',
@@ -163,26 +169,30 @@ if __name__ == '__main__':
         EXEC('Define', 'd0_hlt1_twotrackmva_tos_gec',
              'hlt1TwoTrackMVATriggerEmu(track_spec, comb_spec, vec_pass_gec, {})'.format(args.year),
              True),
-
-        # Debug: TwoTrackMVA input track cuts
-        # EXEC('Define', 'k_diff_chi2ndof',
-        #      'b0_TRACK_CHI2_DAU_1/b0_TRACK_NDOF_DAU_1 - k_TRACK_CHI2NDOF',
-        #       True),
-        # EXEC('Define', 'pi_diff_chi2ndof',
-        #      'b0_TRACK_CHI2_DAU_2/b0_TRACK_NDOF_DAU_2 - pi_TRACK_CHI2NDOF',
-        #      True),
-
-        # EXEC('Define', 'k_diff_p', 'b0_P_DAU_1 - k_P', True),
-        # EXEC('Define', 'pi_diff_p', 'b0_P_DAU_2 - pi_P', True),
-
-        # EXEC('Define', 'k_diff_pt', 'b0_PT_DAU_1 - k_PT', True),
-        # EXEC('Define', 'pi_diff_pt', 'b0_PT_DAU_2 - pi_PT', True),
-
-        # EXEC('Define', 'k_diff_ipchi2',
-        #      'b0_IPCHI2_OWNPV_DAU_1 - k_IPCHI2_OWNPV', True),
-        # EXEC('Define', 'pi_diff_ipchi2',
-        #      'b0_IPCHI2_OWNPV_DAU_2 - pi_IPCHI2_OWNPV', True),
     ]
+
+    directives_debug = [
+        EXEC('Define', 'k_diff_chi2ndof',
+             'b0_TRACK_CHI2_DAU_1/b0_TRACK_NDOF_DAU_1 - k_TRACK_CHI2NDOF',
+             True),
+        EXEC('Define', 'pi_diff_chi2ndof',
+             'b0_TRACK_CHI2_DAU_2/b0_TRACK_NDOF_DAU_2 - pi_TRACK_CHI2NDOF',
+             True),
+
+        EXEC('Define', 'k_diff_p', 'b0_P_DAU_1 - k_P', True),
+        EXEC('Define', 'pi_diff_p', 'b0_P_DAU_2 - pi_P', True),
+
+        EXEC('Define', 'k_diff_pt', 'b0_PT_DAU_1 - k_PT', True),
+        EXEC('Define', 'pi_diff_pt', 'b0_PT_DAU_2 - pi_PT', True),
+
+        EXEC('Define', 'k_diff_ipchi2',
+             'b0_IPCHI2_OWNPV_DAU_1 - k_IPCHI2_OWNPV', True),
+        EXEC('Define', 'pi_diff_ipchi2',
+             'b0_IPCHI2_OWNPV_DAU_2 - pi_IPCHI2_OWNPV', True),
+    ]
+
+    if args.debug:
+        directives += directives_debug
 
     init_frame = RDataFrame(args.tree, args.input)
     dfs, output_br_names = process_directives(directives, init_frame)
