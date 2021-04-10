@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Author: Yipeng Sun
-# Last Change: Sat Apr 10, 2021 at 05:17 PM +0200
+# Last Change: Sat Apr 10, 2021 at 10:31 PM +0200
 
 from argparse import ArgumentParser
 from itertools import combinations
@@ -23,12 +23,16 @@ GEC_SEL_BRANCHES = [
     'NumOTClusters',
 ]
 
-GLOBAL_CORR_BRANCHES = [
-    'NumTTHits',  # FIXME Variable name!
-    'NumVeloClusters',
-    'NumITClusters',
-    'NumOTClusters',
-]
+GLOBAL_CORR_BRANCHES = {
+    'particle': [
+        'TRACK_nTTHits'
+    ],
+    'global': [
+        'NumVeloClusters',
+        'NumITClusters',
+        'NumOTClusters',
+    ]
+}
 
 TRACK_SEL_BRANCHES = [
     'PT',
@@ -113,6 +117,12 @@ def func_call_gen(func, params, particle=None):
     return '{}({})'.format(func, ', '.join(params))
 
 
+def global_corr_gen(particle):
+    params = [particle+'_'+b for b in GLOBAL_CORR_BRANCHES['particle']]
+    params += GLOBAL_CORR_BRANCHES['global']
+    return 'hlt1GlobalPass({})'.format(', '.join(params))
+
+
 def track_spec_gen(particles, branches):
     specs = []
 
@@ -145,8 +155,11 @@ if __name__ == '__main__':
     args = parse_input()
 
     directives = [
+        # Various corrections
         EXEC('Define', 'pass_gec',
              func_call_gen('hlt1GEC', GEC_SEL_BRANCHES), True),
+        EXEC('Define', 'k_pass_hlt1_corr', global_corr_gen('k'), True),
+        EXEC('Define', 'pi_pass_hlt1_corr', global_corr_gen('pi'), True),
 
         # Hlt1TrackMVA emulation
         EXEC('Define', 'k_hlt1_trackmva_tos',
@@ -161,8 +174,8 @@ if __name__ == '__main__':
              'k_hlt1_trackmva_tos || pi_hlt1_trackmva_tos', True),
 
         # Hlt1TwoTrackMVA emulation
-        EXEC('Define', 'vec_pass_gec',
-             'vector<bool>{ pass_gec, pass_gec }'),
+        EXEC('Define', 'vec_pass_hlt1_corr',
+             'vector<bool>{ k_pass_hlt1_corr, pi_pass_hlt1_corr }'),
         EXEC('Define', 'track_spec',
              track_spec_gen(['k', 'pi'], TWO_TRACK_SPEC_BRANCHES)),
         EXEC('Define', 'comb_spec',
