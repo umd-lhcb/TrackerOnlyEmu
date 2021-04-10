@@ -1,5 +1,5 @@
 # Author: Yipeng Sun
-# Last Change: Wed Mar 31, 2021 at 11:59 PM +0200
+# Last Change: Sat Apr 10, 2021 at 06:37 PM +0200
 
 import setuptools
 import subprocess
@@ -55,6 +55,8 @@ setup(
     packages=setuptools.find_packages(),
     include_package_data=True,
     install_requires=[
+        'numpy',
+        'scikit-learn'
     ],
     classifiers=[
         'Programming Language :: Python :: 3',
