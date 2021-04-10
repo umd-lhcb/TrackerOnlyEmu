@@ -49,11 +49,11 @@ This factor is obtained in the following way:
 
 1. Go to [LHCb-PUB-2015-024](https://cds.cern.ch/record/2105078/files/LHCb-PUB-2015-024.pdf)
 2. Locate _Table 2_. Note the _Velo-Forward_ and _VeloTT-Forward_ efficiencies are:
-   93.15% and 89.23%
+    93.15% and 89.23%
 3. Go to _Appendix B_, locate _Eq. 14, efficiency loss_:
-   ![formula](https://render.githubusercontent.com/render/math?math=\text{efficiency%20loss}%20=%20\left(1%20-%20\frac{N_{\text{VeloTT-Forward}}}{N_{\text{Velo-Forward}}}%20\right))
+    ![formula](https://render.githubusercontent.com/render/math?math=\text{efficiency%20loss}%20=%20\left(1%20-%20\frac{N_{\text{VeloTT-Forward}}}{N_{\text{Velo-Forward}}}%20\right))
 4. Now compute the correction factor:
-   ![formula](https://render.githubusercontent.com/render/math?math=\text{correction}%20=%20\left(1%20-%20\frac{0.8923}{0.9315}%20\right)%20=%200.042)
+    ![formula](https://render.githubusercontent.com/render/math?math=\text{correction}%20=%20\left(1%20-%20\frac{0.8923}{0.9315}%20\right)%20=%200.042)
 
 
 ## Acknowledgement
