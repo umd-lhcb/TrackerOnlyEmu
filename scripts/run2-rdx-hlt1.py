@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Author: Yipeng Sun
-# Last Change: Fri Apr 09, 2021 at 03:02 AM +0200
+# Last Change: Sat Apr 10, 2021 at 05:17 PM +0200
 
 from argparse import ArgumentParser
 from itertools import combinations
@@ -76,14 +76,15 @@ specify input ntuple file.
 specify output ntuple file.
 ''')
 
-    parser.add_argument('-t', '--tree', default='TupleB0/DecayTree',
-                        help='''
+    parser.add_argument('-t', '--tree', default='TupleB0/DecayTree', help='''
 specify tree name.
 ''')
 
-    parser.add_argument('-y', '--year', default='2016',
-                        help='''
+    parser.add_argument('-y', '--year', default='2016', help='''
 specify year.''')
+
+    parser.add_argument('-B', '--Bmeson', default='b0', help='''
+specify the name of the B meson in the tree.''')
 
     parser.add_argument('--debug', action='store_true', help='''
 enable debug mode.
@@ -165,7 +166,8 @@ if __name__ == '__main__':
         EXEC('Define', 'track_spec',
              track_spec_gen(['k', 'pi'], TWO_TRACK_SPEC_BRANCHES)),
         EXEC('Define', 'comb_spec',
-             comb_spec_gen('b0', TWO_TRACK_COMB_SPEC_BRANCHES, range(1, 4))),
+             comb_spec_gen(args.Bmeson,
+                           TWO_TRACK_COMB_SPEC_BRANCHES, range(1, 4))),
         EXEC('Define', 'd0_hlt1_twotrackmva_tos_gec',
              'hlt1TwoTrackMVATriggerEmu(track_spec, comb_spec, vec_pass_gec, {})'.format(args.year),
              True),
