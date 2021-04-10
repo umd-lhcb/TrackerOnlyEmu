@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Author: Yipeng Sun
-# Last Change: Sat Apr 10, 2021 at 10:31 PM +0200
+# Last Change: Sun Apr 11, 2021 at 01:02 AM +0200
 
 from argparse import ArgumentParser
 from itertools import combinations
@@ -182,7 +182,7 @@ if __name__ == '__main__':
              comb_spec_gen(args.Bmeson,
                            TWO_TRACK_COMB_SPEC_BRANCHES, range(1, 4))),
         EXEC('Define', 'd0_hlt1_twotrackmva_tos_gec',
-             'hlt1TwoTrackMVATriggerEmu(track_spec, comb_spec, vec_pass_gec, {})'.format(args.year),
+             'hlt1TwoTrackMVATriggerEmu(track_spec, comb_spec, vec_pass_hlt1_corr, {})'.format(args.year),
              True),
     ]
 
