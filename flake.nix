@@ -7,11 +7,15 @@
   };
 
   outputs = { self, nixpkgs, flake-utils }:
+    {
+      overlay = import ./nix/overlay.nix;
+    }
+    //
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = import nixpkgs {
           inherit system;
-          # overlays = [ self.overlay ];
+          overlays = [ self.overlay ];
         };
         python = pkgs.python3;
         pythonPackages = python.pkgs;
