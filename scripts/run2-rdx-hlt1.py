@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Author: Yipeng Sun
-# Last Change: Sun Apr 11, 2021 at 01:02 AM +0200
+# Last Change: Sun Apr 11, 2021 at 10:45 PM +0200
 
 from argparse import ArgumentParser
 from itertools import combinations
@@ -162,16 +162,16 @@ if __name__ == '__main__':
         EXEC('Define', 'pi_pass_hlt1_corr', global_corr_gen('pi'), True),
 
         # Hlt1TrackMVA emulation
-        EXEC('Define', 'k_hlt1_trackmva_tos',
+        EXEC('Define', 'k_hlt1_trackmva_tos_emu',
              func_call_gen(
                  'hlt1TrackMVATriggerEmu',
                  ['k_'+n for n in TRACK_SEL_BRANCHES] + [args.year]), True),
-        EXEC('Define', 'pi_hlt1_trackmva_tos',
+        EXEC('Define', 'pi_hlt1_trackmva_tos_emu',
              func_call_gen(
                  'hlt1TrackMVATriggerEmu',
                  ['pi_'+n for n in TRACK_SEL_BRANCHES] + [args.year]), True),
-        EXEC('Define', 'd0_hlt1_trackmva_tos',
-             'k_hlt1_trackmva_tos || pi_hlt1_trackmva_tos', True),
+        EXEC('Define', 'd0_hlt1_trackmva_tos_emu',
+             'k_hlt1_trackmva_tos_emu || pi_hlt1_trackmva_tos_emu', True),
 
         # Hlt1TwoTrackMVA emulation
         EXEC('Define', 'vec_pass_hlt1_corr',
@@ -181,9 +181,17 @@ if __name__ == '__main__':
         EXEC('Define', 'comb_spec',
              comb_spec_gen(args.Bmeson,
                            TWO_TRACK_COMB_SPEC_BRANCHES, range(1, 4))),
-        EXEC('Define', 'd0_hlt1_twotrackmva_tos_gec',
+        EXEC('Define', 'd0_hlt1_twotrackmva_tos_emu',
              'hlt1TwoTrackMVATriggerEmu(track_spec, comb_spec, vec_pass_hlt1_corr, {})'.format(args.year),
              True),
+
+        # Reference variables
+        EXEC('Define', 'd0_l0_global_dec', 'd0_L0Global_Dec', True),
+        EXEC('Define', 'd0_hlt1_trackmva_tos', 'd0_Hlt1TrackMVADecision_TOS', True),
+        EXEC('Define', 'd0_hlt1_twotrackmva_tos', 'd0_Hlt1TwoTrackMVADecision_TOS', True),
+        EXEC('Define', 'q2', 'FitVar_q2', True),
+        EXEC('Define', 'mmiss2', 'FitVar_Mmiss2', True),
+        EXEC('Define', 'el', 'FitVar_El', True),
     ]
 
     directives_debug = [
