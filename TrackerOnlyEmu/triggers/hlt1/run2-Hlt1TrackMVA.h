@@ -1,6 +1,6 @@
 // Stolen from:
 //   https://gitlab.cern.ch/lhcb-slb/B02DplusTauNu/-/blob/master/tuple_processing_chain/emulate_HLT1_cuts.py
-// Last Change: Fri Apr 02, 2021 at 12:51 AM +0200
+// Last Change: Sun Apr 11, 2021 at 11:41 PM +0200
 // Description: Hlt1TrackMVA offline emulation
 
 #ifndef _RUN2_HLT1_TRACKMVA_
@@ -73,8 +73,9 @@ bool hlt1TrackMVADec( double PT, double P, double TRCHI2DOF, double BPVIPCHI2,
 }
 
 bool hlt1TrackMVATriggerEmu( double PT, double P, double TRCHI2DOF,
-                             double BPVIPCHI2, double TRGHOSTPROB, int year ) {
-  if ( hlt1TrackInputDec( PT, P, TRCHI2DOF, TRGHOSTPROB, year ) ) {
+                             double BPVIPCHI2, double TRGHOSTPROB,
+                             bool passSel, int year ) {
+  if ( passSel && hlt1TrackInputDec( PT, P, TRCHI2DOF, TRGHOSTPROB, year ) ) {
     return hlt1TrackMVADec( PT, P, TRCHI2DOF, BPVIPCHI2, TRGHOSTPROB, year );
   }
   return false;

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Author: Yipeng Sun
-# Last Change: Sun Apr 11, 2021 at 10:45 PM +0200
+# Last Change: Sun Apr 11, 2021 at 11:39 PM +0200
 
 from argparse import ArgumentParser
 from itertools import combinations
@@ -165,11 +165,13 @@ if __name__ == '__main__':
         EXEC('Define', 'k_hlt1_trackmva_tos_emu',
              func_call_gen(
                  'hlt1TrackMVATriggerEmu',
-                 ['k_'+n for n in TRACK_SEL_BRANCHES] + [args.year]), True),
+                 ['k_'+n for n in TRACK_SEL_BRANCHES] +
+                 ['k_pass_hlt1_corr', args.year]), True),
         EXEC('Define', 'pi_hlt1_trackmva_tos_emu',
              func_call_gen(
                  'hlt1TrackMVATriggerEmu',
-                 ['pi_'+n for n in TRACK_SEL_BRANCHES] + [args.year]), True),
+                 ['pi_'+n for n in TRACK_SEL_BRANCHES] +
+                 ['pi_pass_hlt1_corr', args.year]), True),
         EXEC('Define', 'd0_hlt1_trackmva_tos_emu',
              'k_hlt1_trackmva_tos_emu || pi_hlt1_trackmva_tos_emu', True),
 
