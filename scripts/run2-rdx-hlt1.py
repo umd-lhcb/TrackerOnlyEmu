@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Author: Yipeng Sun
-# Last Change: Sun Apr 11, 2021 at 11:39 PM +0200
+# Last Change: Sun Apr 11, 2021 at 11:44 PM +0200
 
 from argparse import ArgumentParser
 from itertools import combinations
@@ -188,9 +188,17 @@ if __name__ == '__main__':
              True),
 
         # Reference variables
+        EXEC('Define', 'k_l0_global_dec', 'k_L0Global_Dec', True),
+        EXEC('Define', 'k_hlt1_trackmva_tos', 'k_Hlt1TrackMVADecision_TOS',
+             True),
+        EXEC('Define', 'pi_l0_global_dec', 'pi_L0Global_Dec', True),
+        EXEC('Define', 'pi_hlt1_trackmva_tos', 'pi_Hlt1TrackMVADecision_TOS',
+             True),
         EXEC('Define', 'd0_l0_global_dec', 'd0_L0Global_Dec', True),
-        EXEC('Define', 'd0_hlt1_trackmva_tos', 'd0_Hlt1TrackMVADecision_TOS', True),
-        EXEC('Define', 'd0_hlt1_twotrackmva_tos', 'd0_Hlt1TwoTrackMVADecision_TOS', True),
+        EXEC('Define', 'd0_hlt1_trackmva_tos', 'd0_Hlt1TrackMVADecision_TOS',
+             True),
+        EXEC('Define', 'd0_hlt1_twotrackmva_tos', 'd0_Hlt1TwoTrackMVADecision_TOS',
+             True),
         EXEC('Define', 'q2', 'FitVar_q2', True),
         EXEC('Define', 'mmiss2', 'FitVar_Mmiss2', True),
         EXEC('Define', 'el', 'FitVar_El', True),
