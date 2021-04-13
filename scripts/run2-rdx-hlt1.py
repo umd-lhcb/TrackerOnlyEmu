@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Author: Yipeng Sun
-# Last Change: Sun Apr 11, 2021 at 11:44 PM +0200
+# Last Change: Tue Apr 13, 2021 at 06:40 PM +0200
 
 from argparse import ArgumentParser
 from itertools import combinations
@@ -199,9 +199,9 @@ if __name__ == '__main__':
              True),
         EXEC('Define', 'd0_hlt1_twotrackmva_tos', 'd0_Hlt1TwoTrackMVADecision_TOS',
              True),
-        EXEC('Define', 'q2', 'FitVar_q2', True),
-        EXEC('Define', 'mmiss2', 'FitVar_Mmiss2', True),
-        EXEC('Define', 'el', 'FitVar_El', True),
+        EXEC('Define', 'q2', 'FitVar_q2 / 1e6', True),
+        EXEC('Define', 'mmiss2', 'FitVar_Mmiss2 / 1e6', True),
+        EXEC('Define', 'el', 'FitVar_El / 1e3', True),
     ]
 
     directives_debug = [
