@@ -1,6 +1,6 @@
 // Stolen from:
 //   https://gitlab.cern.ch/lhcb-slb/B02DplusTauNu/-/blob/master/tuple_processing_chain/emulate_HLT1_cuts.py
-// Last Change: Sun Apr 11, 2021 at 11:41 PM +0200
+// Last Change: Fri Apr 16, 2021 at 01:46 AM +0200
 // Description: Hlt1TrackMVA offline emulation
 
 #ifndef _RUN2_HLT1_TRACKMVA_
@@ -55,7 +55,8 @@ bool hlt1TrackMVADec( double PT, double P, double TRCHI2DOF, double BPVIPCHI2,
     if ( TRCHI2DOF >= 2.5 || TRGHOSTPROB >= 0.2 ) return false;
     if ( ( PT > 25000 && BPVIPCHI2 > 7.4 ) ||
          ( ( PT > 1000 && PT < 25000 ) &&
-           trackMVAVal( BPVIPCHI2, PT, 1.0, 1.0, 2.3 ) ) )
+           // trackMVAVal( BPVIPCHI2, PT, 1.0, 1.0, 2.3 ) ) )  // from data TCK
+           trackMVAVal( BPVIPCHI2, PT, 1.0, 1.0, 1.1 ) ) )  // Simone's
       return true;
     return false;
   } else if ( year == 2017 || 2018 ) {

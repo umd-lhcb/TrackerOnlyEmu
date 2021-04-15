@@ -1,6 +1,6 @@
 // Stolen from:
 //   https://gitlab.cern.ch/lhcb-slb/B02DplusTauNu/-/blob/master/tuple_processing_chain/emulate_HLT1_cuts.py
-// Last Change: Mon Apr 05, 2021 at 01:23 AM +0200
+// Last Change: Fri Apr 16, 2021 at 01:47 AM +0200
 // Description: Hlt1TwoTrackMVA offline emulation
 
 #ifndef _RUN2_HLT1_TWOTRACKMVA_
@@ -89,7 +89,8 @@ bool hlt1TwoTrackMVADec( double VDCHI2, double APT, double DOCA, double VCHI2,
     bool selPreVertexing = ( DOCA > 0 && DOCA < 10 ) && APT > 2000;
     bool selCombo        = VCHI2 < 10 && ( BPVETA > 2 && BPVETA < 5 ) &&
                     ( BPVCORRM > 100 && BPVCORRM < 1000000000 ) &&
-                    BPVDIRA > 0 && MVA > 0.97;
+                    // BPVDIRA > 0 && MVA > 0.97;  // from data TCK
+                    BPVDIRA > 0 && MVA > 0.95;  // Simone's
     return selPreVertexing && selCombo;
   } else {
     cout << "Year: " << year << " not recognized." << endl;
