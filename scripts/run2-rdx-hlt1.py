@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Author: Yipeng Sun
-# Last Change: Tue Apr 13, 2021 at 06:40 PM +0200
+# Last Change: Thu Apr 15, 2021 at 09:40 PM +0200
 
 from argparse import ArgumentParser
 from itertools import combinations
@@ -199,9 +199,15 @@ if __name__ == '__main__':
              True),
         EXEC('Define', 'd0_hlt1_twotrackmva_tos', 'd0_Hlt1TwoTrackMVADecision_TOS',
              True),
+
+        # Kinematic variables to keep
         EXEC('Define', 'q2', 'FitVar_q2 / 1e6', True),
         EXEC('Define', 'mmiss2', 'FitVar_Mmiss2 / 1e6', True),
         EXEC('Define', 'el', 'FitVar_El / 1e3', True),
+        EXEC('Define', 'k_pt', 'k_PT / 1e3', True),
+        EXEC('Define', 'k_pt', 'k_p / 1e3', True),
+        EXEC('Define', 'pi_pt', 'pi_PT / 1e3', True),
+        EXEC('Define', 'pi_p', 'pi_p / 1e3', True),
     ]
 
     directives_debug = [
