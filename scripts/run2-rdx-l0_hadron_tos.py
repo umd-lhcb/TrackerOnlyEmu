@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Author: Yipeng Sun
-# Last Change: Thu Apr 15, 2021 at 09:15 PM +0200
+# Last Change: Thu Apr 15, 2021 at 09:39 PM +0200
 # Stolen from: https://gitlab.cern.ch/lhcb-slb/B02DplusTauNu/-/blob/master/tuple_processing_chain/emulate_L0HadronTOS.py
 
 from math import floor
@@ -23,15 +23,19 @@ def find_binning_idx(x, x_binning):
     return cur_x_bin
 
 
-########################
-# Correction functions #
-########################
-# These are used to correct for 2-particle responses hitting on the
-# calorimeters. The details are documented in LHCb-INT-2019-025
+#######################
+# Emulation functions #
+#######################
+# These functions are used for generating the HCAL ET and correcting responses
+# up to 2 particle. The details are documented in LHCb-INT-2019-025
 
-# NOTE: The responses from HCAL with a single pi is stored in a histogram as a
-#       function of P, PT of the pi.
-#       We use the responses as a smearing factor
+# NOTE: The difference between Tracker ET and HCAL ET with a single pi is stored
+#       in a histogram as a function of P, PT.
+#
+#       Typically, Tracker ET > HCAL ET.
+#
+#       We use the responses as a "smearing" factor that mostly reduces
+#       Tracker ET.
 def random_smearing(P, PT, realET, P_binning, PT_binning, P_PT_histos):
     # Choosing the P-PT bin/histo for this particle
     cur_P_bin = find_binning_idx(P, PT_binning)
@@ -56,5 +60,5 @@ def random_smearing(P, PT, realET, P_binning, PT_binning, P_PT_histos):
     return smearedET
 
 
-def missing_fraction():
+def missing_fraction(rdiff, region, clusters):
     pass
