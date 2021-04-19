@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Author: Yipeng Sun
-# Last Change: Mon Apr 19, 2021 at 03:25 AM +0200
+# Last Change: Mon Apr 19, 2021 at 03:38 AM +0200
 # Stolen from: https://gitlab.cern.ch/lhcb-slb/B02DplusTauNu/-/blob/master/tuple_processing_chain/emulate_L0Hadron_TOS_RLc.py
 
 from argparse import ArgumentParser
@@ -57,11 +57,11 @@ gInterpreter.Declare('auto histoCluster = new TFile("{}");'.format(
 epilogue = '''
 auto hResp = readSinglePartResp(histoResp);
 
-auto hMissIn  = static_cast<TH1D*>(histoCluster->Get("missing_with_radial_inner"));
-auto hMissOut = static_cast<TH1D*>(histoCluster->Get("missing_with_radial_outer"));
-
 auto hSharedIn  = static_cast<TH1D*>(histoCluster->Get("shared_with_radial_inner"));
 auto hSharedOut = static_cast<TH1D*>(histoCluster->Get("shared_with_radial_outer"));
+
+auto hMissIn  = static_cast<TH1D*>(histoCluster->Get("missing_with_radial_inner"));
+auto hMissOut = static_cast<TH1D*>(histoCluster->Get("missing_with_radial_outer"));
 '''
 gInterpreter.Declare(epilogue)
 
@@ -74,10 +74,26 @@ if __name__ == '__main__':
     args = parse_input()
 
     directives = [
-        EXEC('Define', 'k_et_smeared'
+        EXEC('Define', 'k_et_smeared',
              'singlePartEt(k_P, k_PT, k_L0Calo_HCAL_realET, hResp)', True),
-        EXEC('Define', 'pi_et_smeared'
+        EXEC('Define', 'pi_et_smeared',
              'singlePartEt(pi_P, pi_PT, pi_L0Calo_HCAL_realET, hResp)', True),
+        EXEC('Define', 'rdiff_k_pi', 'rDiff(k_X, k_Y, pi_X, pi_Y)', True),
+        EXEC('Define', 'shared_k_pi',
+             'isShared(rdiff_k_pi, k_L0Calo_HCAL_region, pi_L0Calo_HCAL_region, hSharedIn, hSharedOut)',
+             True),
+        EXEC('Define', 'miss_k_pi',
+             'missingFraction(rdiff_k_pi, k_L0Calo_HCAL_region, pi_L0Calo_HCAL_region, hMissIn, hMissOut)',
+             True),
+        EXEC('Define', 'k_et_emu',
+             'twoPartEt(k_et_smeared, pi_et_smeared, shared_k_pi, miss_k_pi)',
+             True),
+        EXEC('Define', 'pi_et_emu',
+             'twoPartEt(pi_et_smeared, k_et_smeared, shared_k_pi, miss_k_pi)',
+             True),
+        EXEC('Define', 'd0_et_emu', 'TMath::Max(k_et_emu, pi_et_emu)', True),
+        EXEC('Define', 'd0_l0_hadron_tos_emu',
+             'L0Emu(d0_et_emu, {})'.format(args.year), True),
     ]
 
     init_frame = RDataFrame(args.tree, args.input)
