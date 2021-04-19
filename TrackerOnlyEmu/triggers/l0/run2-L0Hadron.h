@@ -1,6 +1,6 @@
 // Stolen from:
 //   https://gitlab.cern.ch/lhcb-slb/B02DplusTauNu/-/blob/master/tuple_processing_chain/emulate_L0Hadron_TOS_RLc.py
-// Last Change: Mon Apr 19, 2021 at 03:00 AM +0200
+// Last Change: Mon Apr 19, 2021 at 03:10 AM +0200
 //
 #ifndef _RUN2_L0_HADRON_
 #define _RUN2_L0_HADRON_
@@ -112,6 +112,17 @@ double twoPartEt( double smearedET1, double smearedET2, bool isShared,
   double ET = smearedET1;
   if ( isShared ) ET = ( ET + smearedET2 ) * missFrac;
   return ET;
+}
+
+//////////////
+// L0Hadron //
+//////////////
+
+bool L0Emu( double ET, int year ) {
+  double triggerThresh = 3600;
+  if ( year == 2016 ) triggerThresh = 3744;
+
+  return ET > triggerThresh;
 }
 
 #endif
