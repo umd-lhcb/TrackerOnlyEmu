@@ -1,64 +1,64 @@
 #!/usr/bin/env python3
 #
 # Author: Yipeng Sun
-# Last Change: Thu Apr 15, 2021 at 09:39 PM +0200
-# Stolen from: https://gitlab.cern.ch/lhcb-slb/B02DplusTauNu/-/blob/master/tuple_processing_chain/emulate_L0HadronTOS.py
+# Last Change: Mon Apr 19, 2021 at 03:20 AM +0200
+# Stolen from: https://gitlab.cern.ch/lhcb-slb/B02DplusTauNu/-/blob/master/tuple_processing_chain/emulate_L0Hadron_TOS_RLc.py
 
-from math import floor
+from argparse import ArgumentParser
 
+from ROOT import gInterpreter, RDataFrame
 
-####################
-# Helper functions #
-####################
-
-def find_binning_idx(x, x_binning):
-    x_high, x_low, x_bins = x_binning
-    cur_x_bin = floor(x / ((x_high-x_low) / x_bins))
-
-    if cur_x_bin < 0:
-        cur_x_bin = 0
-    if cur_x_bin >= x_bins:
-        cur_x_bin = x_bins - 1
-
-    return cur_x_bin
+from TrackerOnlyEmu.loader import load_file, load_cpp
+from TrackerOnlyEmu.executor import ExecDirective as EXEC
+from TrackerOnlyEmu.executor import process_directives
 
 
-#######################
-# Emulation functions #
-#######################
-# These functions are used for generating the HCAL ET and correcting responses
-# up to 2 particle. The details are documented in LHCb-INT-2019-025
+#################################
+# Command line arguments parser #
+#################################
 
-# NOTE: The difference between Tracker ET and HCAL ET with a single pi is stored
-#       in a histogram as a function of P, PT.
-#
-#       Typically, Tracker ET > HCAL ET.
-#
-#       We use the responses as a "smearing" factor that mostly reduces
-#       Tracker ET.
-def random_smearing(P, PT, realET, P_binning, PT_binning, P_PT_histos):
-    # Choosing the P-PT bin/histo for this particle
-    cur_P_bin = find_binning_idx(P, PT_binning)
-    cur_PT_bin = find_binning_idx(PT, PT_binning)
+def parse_input():
+    parser = ArgumentParser(
+        description='Emulate L0Hadron trigger.')
 
-    # Taking the right momentum region histo of calorimeter uncertainties
-    cur_P_PT_histo = P_PT_histos[cur_P_bin][cur_PT_bin]
-    if cur_P_PT_histo.GetEntries() == 0:
-        return 0.0
+    parser.add_argument('input', help='''
+specify input ntuple file.
+''')
 
-    # Take a random value for the uncertainties from the histo
-    rand = cur_P_PT_histo.GetRandom()
+    parser.add_argument('output', help='''
+specify output ntuple file.
+''')
 
-    # realET is the transverse energy from the tracker
-    smearedET = realET * (1-rand)
+    parser.add_argument('-t', '--tree', default='TupleB0/DecayTree', help='''
+specify tree name.
+''')
 
-    if smearedET < 0:
-        smearedET = 0
-    elif smearedET > 6100:  # Limitation from HCAL. HCAL is overloaded in this case
-        smearedET = 6100
+    parser.add_argument('-y', '--year', default='2016', help='''
+specify year.''')
 
-    return smearedET
+    parser.add_argument('--debug', action='store_true', help='''
+enable debug mode.
+''')
+
+    return parser.parse_args()
 
 
-def missing_fraction(rdiff, region, clusters):
-    pass
+##########################################
+# Load C++ definitions & ROOT histograms #
+##########################################
+
+load_cpp('<triggers/l0/run2-L0Hadron.h>')
+
+gInterpreter.Declare('auto histoResp = new TFile("{}");'.format(
+    load_file('<triggers/l0/hcal_et_response.root>')))
+gInterpreter.Declare('auto histoCluster = new TFile("{}");'.format(
+    load_file('<triggers/l0/hcal_two_part_clusters.root>')))
+
+two_part_histos = '''
+auto hMissIn  = static_cast<TH1D*>(histoCluster->Get("missing_with_radial_inner"));
+auto hMissOut = static_cast<TH1D*>(histoCluster->Get("missing_with_radial_outer"));
+
+auto hSharedIn  = static_cast<TH1D*>(histoCluster->Get("shared_with_radial_inner"));
+auto hSharedOut = static_cast<TH1D*>(histoCluster->Get("shared_with_radial_outer"));
+'''
+gInterpreter.Declar(two_part_histos)
