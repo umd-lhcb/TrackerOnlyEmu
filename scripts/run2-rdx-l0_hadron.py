@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Author: Yipeng Sun
-# Last Change: Mon Apr 19, 2021 at 03:20 AM +0200
+# Last Change: Mon Apr 19, 2021 at 03:25 AM +0200
 # Stolen from: https://gitlab.cern.ch/lhcb-slb/B02DplusTauNu/-/blob/master/tuple_processing_chain/emulate_L0Hadron_TOS_RLc.py
 
 from argparse import ArgumentParser
@@ -54,11 +54,38 @@ gInterpreter.Declare('auto histoResp = new TFile("{}");'.format(
 gInterpreter.Declare('auto histoCluster = new TFile("{}");'.format(
     load_file('<triggers/l0/hcal_two_part_clusters.root>')))
 
-two_part_histos = '''
+epilogue = '''
+auto hResp = readSinglePartResp(histoResp);
+
 auto hMissIn  = static_cast<TH1D*>(histoCluster->Get("missing_with_radial_inner"));
 auto hMissOut = static_cast<TH1D*>(histoCluster->Get("missing_with_radial_outer"));
 
 auto hSharedIn  = static_cast<TH1D*>(histoCluster->Get("shared_with_radial_inner"));
 auto hSharedOut = static_cast<TH1D*>(histoCluster->Get("shared_with_radial_outer"));
 '''
-gInterpreter.Declar(two_part_histos)
+gInterpreter.Declare(epilogue)
+
+
+#################
+# Apply trigger #
+#################
+
+if __name__ == '__main__':
+    args = parse_input()
+
+    directives = [
+        EXEC('Define', 'k_et_smeared'
+             'singlePartEt(k_P, k_PT, k_L0Calo_HCAL_realET, hResp)', True),
+        EXEC('Define', 'pi_et_smeared'
+             'singlePartEt(pi_P, pi_PT, pi_L0Calo_HCAL_realET, hResp)', True),
+    ]
+
+    init_frame = RDataFrame(args.tree, args.input)
+    dfs, output_br_names = process_directives(directives, init_frame)
+
+    # Always keep run and event numbers
+    output_br_names.push_back('runNumber')
+    output_br_names.push_back('eventNumber')
+
+    # Output
+    dfs[-1].Snapshot(args.tree, args.output, output_br_names)
