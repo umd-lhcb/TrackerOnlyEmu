@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Author: Yipeng Sun
-# Last Change: Fri Apr 16, 2021 at 02:04 AM +0200
+# Last Change: Mon Apr 19, 2021 at 03:43 AM +0200
 
 from argparse import ArgumentParser
 from itertools import combinations
@@ -186,7 +186,9 @@ if __name__ == '__main__':
         EXEC('Define', 'd0_hlt1_twotrackmva_tos_emu',
              'hlt1TwoTrackMVATriggerEmu(track_spec, comb_spec, vec_pass_hlt1_corr, {})'.format(args.year),
              True),
+    ]
 
+    directives_debug = [
         # Reference variables
         EXEC('Define', 'k_l0_global_dec', 'k_L0Global_Dec', True),
         EXEC('Define', 'k_hlt1_trackmva_tos', 'k_Hlt1TrackMVADecision_TOS',
@@ -218,26 +220,6 @@ if __name__ == '__main__':
         EXEC('Define', 'pi_chi2ndof', 'pi_TRACK_CHI2NDOF', True),
         EXEC('Define', 'pi_ipchi2', 'pi_IPCHI2_OWNPV', True),
         EXEC('Define', 'pi_ghost', 'pi_TRACK_GhostProb', True),
-    ]
-
-    directives_debug = [
-        EXEC('Define', 'k_diff_chi2ndof',
-             'b0_TRACK_CHI2_DAU_1/b0_TRACK_NDOF_DAU_1 - k_TRACK_CHI2NDOF',
-             True),
-        EXEC('Define', 'pi_diff_chi2ndof',
-             'b0_TRACK_CHI2_DAU_2/b0_TRACK_NDOF_DAU_2 - pi_TRACK_CHI2NDOF',
-             True),
-
-        EXEC('Define', 'k_diff_p', 'b0_P_DAU_1 - k_P', True),
-        EXEC('Define', 'pi_diff_p', 'b0_P_DAU_2 - pi_P', True),
-
-        EXEC('Define', 'k_diff_pt', 'b0_PT_DAU_1 - k_PT', True),
-        EXEC('Define', 'pi_diff_pt', 'b0_PT_DAU_2 - pi_PT', True),
-
-        EXEC('Define', 'k_diff_ipchi2',
-             'b0_IPCHI2_OWNPV_DAU_1 - k_IPCHI2_OWNPV', True),
-        EXEC('Define', 'pi_diff_ipchi2',
-             'b0_IPCHI2_OWNPV_DAU_2 - pi_IPCHI2_OWNPV', True),
     ]
 
     if args.debug:

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Author: Yipeng Sun
-# Last Change: Mon Apr 19, 2021 at 03:38 AM +0200
+# Last Change: Mon Apr 19, 2021 at 03:41 AM +0200
 # Stolen from: https://gitlab.cern.ch/lhcb-slb/B02DplusTauNu/-/blob/master/tuple_processing_chain/emulate_L0Hadron_TOS_RLc.py
 
 from argparse import ArgumentParser
@@ -95,6 +95,14 @@ if __name__ == '__main__':
         EXEC('Define', 'd0_l0_hadron_tos_emu',
              'L0Emu(d0_et_emu, {})'.format(args.year), True),
     ]
+
+    directives_debug = [
+        # Reference variables
+        EXEC('Define', 'd0_l0_hadron_tos', 'd0_L0HadronDecision_TOS', True)
+    ]
+
+    if args.debug:
+        directives += directives_debug
 
     init_frame = RDataFrame(args.tree, args.input)
     dfs, output_br_names = process_directives(directives, init_frame)
