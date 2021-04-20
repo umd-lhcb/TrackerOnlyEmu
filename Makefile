@@ -1,5 +1,5 @@
 # Author: Yipeng Sun
-# Last Change: Mon Apr 19, 2021 at 03:26 AM +0200
+# Last Change: Tue Apr 20, 2021 at 03:14 AM +0200
 
 .PHONY: sdist clean install install-egg
 
@@ -23,6 +23,10 @@ test-hlt1:
 	@mkdir -p gen
 	run2-rdx-hlt1.py ./samples/rdx-tracker_only.root ./gen/emu_hlt1.root
 
-test-l0:
+test-l0-hadron:
 	@mkdir -p gen
-	run2-rdx-l0_hadron.py ./samples/rdx-tracker_only.root ./gen/emu_l0.root
+	run2-rdx-l0_hadron.py ./samples/rdx-tracker_only.root ./gen/emu_l0_hadron.root
+
+test-l0-global-tis:
+	@mkdir -p gen
+	run2-rdx-l0_global_tis.py ./samples/rdx-tracker_only.root ./gen/emu_l0_global_tis.root
