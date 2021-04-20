@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Author: Yipeng Sun
-# Last Change: Mon Apr 19, 2021 at 05:20 PM +0200
+# Last Change: Tue Apr 20, 2021 at 02:33 AM +0200
 # Stolen from: https://gitlab.cern.ch/lhcb-slb/B02DplusTauNu/-/blob/master/tuple_processing_chain/emulate_L0Hadron_TOS_RLc.py
 
 from argparse import ArgumentParser
@@ -93,7 +93,7 @@ if __name__ == '__main__':
              True),
         EXEC('Define', 'd0_et_emu', 'TMath::Max(k_et_emu, pi_et_emu)', True),
         EXEC('Define', 'd0_l0_hadron_tos_emu',
-             'L0Emu(d0_et_emu, {})'.format(args.year), True),
+             'L0HadronTriggerEmu(d0_et_emu, {})'.format(args.year), True),
     ]
 
     directives_debug = [
