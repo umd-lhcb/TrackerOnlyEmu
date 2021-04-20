@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Author: Yipeng Sun
-# Last Change: Tue Apr 20, 2021 at 03:15 AM +0200
+# Last Change: Tue Apr 20, 2021 at 07:11 PM +0200
 # Stolen from: https://gitlab.cern.ch/lhcb-slb/B02DplusTauNu/-/blob/master/tuple_processing_chain/emulate_L0GlobalTIS.py
 
 from argparse import ArgumentParser
@@ -83,12 +83,18 @@ if __name__ == '__main__':
     directives_debug = [
         # Reference variables
         EXEC('Define', '{}_l0_global_tis'.format(args.Bmeson),
-             '{}_L0Global_TIS', True),
+             '{}_L0Global_TIS'.format(args.Bmeson), True),
 
         # Fit variables
         EXEC('Define', 'q2', 'FitVar_q2 / 1e6', True),
         EXEC('Define', 'mmiss2', 'FitVar_Mmiss2 / 1e6', True),
         EXEC('Define', 'el', 'FitVar_El / 1e3', True),
+
+        # Log of B meson momenta
+        EXEC('Define', 'log_{}_true_pz'.format(args.Bmeson),
+             'TMath::Log({}_true_pz)'.format(args.Bmeson), True),
+        EXEC('Define', 'log_{}_true_pt'.format(args.Bmeson),
+             'TMath::Log({}_true_pt)'.format(args.Bmeson), True),
     ]
 
     if args.debug:
