@@ -1,5 +1,9 @@
 # TrackerOnlyEmu
-A collection of tools for emulating tracker responses.
+A collection of tools for emulating tracker responses. This is a partial
+reimplementation of the trigger emulation methods described in
+[_LHCb-INT-2019-025_](https://cds.cern.ch/record/2703802?ln=en).
+
+The original implementation are available at [`B02DplusTauNu`](https://gitlab.cern.ch/lhcb-slb/B02DplusTauNu).
 
 
 ## Add HLT1 info extraction tool to DaVinci
