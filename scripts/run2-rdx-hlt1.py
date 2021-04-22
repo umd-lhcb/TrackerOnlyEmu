@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Author: Yipeng Sun
-# Last Change: Mon Apr 19, 2021 at 03:43 AM +0200
+# Last Change: Fri Apr 23, 2021 at 01:15 AM +0200
 
 from argparse import ArgumentParser
 from itertools import combinations
@@ -104,6 +104,7 @@ enable debug mode.
 load_cpp('<triggers/hlt1/run2-Hlt1GEC.h>')
 load_cpp('<triggers/hlt1/run2-Hlt1TrackMVA.h>')
 load_cpp('<triggers/hlt1/run2-Hlt1TwoTrackMVA.h>')
+load_cpp('<triggers/kinematics.h>')
 
 
 ##################
@@ -220,6 +221,14 @@ if __name__ == '__main__':
         EXEC('Define', 'pi_chi2ndof', 'pi_TRACK_CHI2NDOF', True),
         EXEC('Define', 'pi_ipchi2', 'pi_IPCHI2_OWNPV', True),
         EXEC('Define', 'pi_ghost', 'pi_TRACK_GhostProb', True),
+
+        # Angular variables
+        EXEC('Define', 'mu_theta', 'theta(mu_PZ, mu_P)', True),
+        EXEC('Define', 'k_theta', 'theta(k_PZ, k_P)', True),
+        EXEC('Define', 'pi_theta', 'theta(pi_PZ, pi_P)', True),
+        EXEC('Define', 'mu_phi', 'phi(mu_PX, mu_PY)', True),
+        EXEC('Define', 'k_phi', 'phi(k_PX, k_PY)', True),
+        EXEC('Define', 'pi_phi', 'phi(pi_PX, pi_PY)', True),
     ]
 
     if args.debug:
