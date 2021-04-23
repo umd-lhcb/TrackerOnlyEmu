@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Author: Yipeng Sun
-# Last Change: Fri Apr 23, 2021 at 03:21 AM +0200
+# Last Change: Fri Apr 23, 2021 at 03:50 AM +0200
 
 from argparse import ArgumentParser
 from itertools import combinations
@@ -266,6 +266,9 @@ if __name__ == '__main__':
         directives_mva.append(
             EXEC('Define', 'mva_vertex_ndof_{}_{}'.format(i, j),
             '{}_VERTEX_NDOF_COMB_{}_{}'.format(args.Bmeson, i, j), True))
+        directives_mva.append(
+            EXEC('Define', 'mva_mcorr_{}_{}'.format(i, j),
+            '{}_MCORR_OWNPV_COMB_{}_{}'.format(args.Bmeson, i, j), True))
 
     if args.debug:
         directives += directives_debug
