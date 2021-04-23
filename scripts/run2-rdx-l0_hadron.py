@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Author: Yipeng Sun
-# Last Change: Tue Apr 20, 2021 at 02:33 AM +0200
+# Last Change: Fri Apr 23, 2021 at 04:10 AM +0200
 # Stolen from: https://gitlab.cern.ch/lhcb-slb/B02DplusTauNu/-/blob/master/tuple_processing_chain/emulate_L0Hadron_TOS_RLc.py
 
 from argparse import ArgumentParser
@@ -104,6 +104,11 @@ if __name__ == '__main__':
         EXEC('Define', 'q2', 'FitVar_q2 / 1e6', True),
         EXEC('Define', 'mmiss2', 'FitVar_Mmiss2 / 1e6', True),
         EXEC('Define', 'el', 'FitVar_El / 1e3', True),
+
+        # Kinematic variables
+        EXEC('Define', 'd0_pt', 'd0_PT / 1e3', True),
+        EXEC('Define', 'k_pt', 'k_PT / 1e3', True),
+        EXEC('Define', 'pi_pt', 'pi_PT / 1e3', True),
     ]
 
     if args.debug:
