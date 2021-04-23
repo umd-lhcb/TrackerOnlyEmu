@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Author: Yipeng Sun
-# Last Change: Fri Apr 23, 2021 at 01:15 AM +0200
+# Last Change: Fri Apr 23, 2021 at 03:21 AM +0200
 
 from argparse import ArgumentParser
 from itertools import combinations
@@ -213,6 +213,8 @@ if __name__ == '__main__':
         EXEC('Define', 'k_p', 'k_P / 1e3', True),
         EXEC('Define', 'pi_pt', 'pi_PT / 1e3', True),
         EXEC('Define', 'pi_p', 'pi_P / 1e3', True),
+        EXEC('Define', 'k_pi_apt', 'computePt(k_PX+pi_PX, k_PY+pi_PY) / 1e3',
+             True),
 
         # Track quality variables
         EXEC('Define', 'k_chi2ndof', 'k_TRACK_CHI2NDOF', True),
@@ -231,8 +233,43 @@ if __name__ == '__main__':
         EXEC('Define', 'pi_phi', 'phi(pi_PX, pi_PY)', True),
     ]
 
+    directives_mva = []
+    for i, j in combinations(range(1, 5), 2):
+        directives_mva.append(
+            EXEC('Define', 'mva_score_{}_{}'.format(i, j),
+            '{}_Matrixnet_Hlt1TwoTrackMVAEmulations_{}_{}'.format(
+                args.Bmeson, i, j), True))
+        directives_mva.append(
+            EXEC('Define', 'mva_dira_{}_{}'.format(i, j),
+            '{}_DIRA_OWNPV_COMB_{}_{}'.format(args.Bmeson, i, j), True))
+        directives_mva.append(
+            EXEC('Define', 'mva_doca_{}_{}'.format(i, j),
+            '{}_DOCA_COMB_{}_{}'.format(args.Bmeson, i, j), True))
+        directives_mva.append(
+            EXEC('Define', 'mva_eta_{}_{}'.format(i, j),
+            '{}_ETA_COMB_{}_{}'.format(args.Bmeson, i, j), True))
+        directives_mva.append(
+            EXEC('Define', 'mva_ip_chi2_{}_{}'.format(i, j),
+            '{}_IPCHI2_OWNPV_COMB_{}_{}'.format(args.Bmeson, i, j), True))
+        directives_mva.append(
+            EXEC('Define', 'mva_pt_{}_{}'.format(i, j),
+            '{}_PT_COMB_{}_{}'.format(args.Bmeson, i, j), True))
+        directives_mva.append(
+            EXEC('Define', 'mva_p_{}_{}'.format(i, j),
+            '{}_P_COMB_{}_{}'.format(args.Bmeson, i, j), True))
+        directives_mva.append(
+            EXEC('Define', 'mva_vd_chi2_{}_{}'.format(i, j),
+            '{}_VDCHI2_OWNPV_COMB_{}_{}'.format(args.Bmeson, i, j), True))
+        directives_mva.append(
+            EXEC('Define', 'mva_vertex_chi2_{}_{}'.format(i, j),
+            '{}_VERTEX_CHI2_COMB_{}_{}'.format(args.Bmeson, i, j), True))
+        directives_mva.append(
+            EXEC('Define', 'mva_vertex_ndof_{}_{}'.format(i, j),
+            '{}_VERTEX_NDOF_COMB_{}_{}'.format(args.Bmeson, i, j), True))
+
     if args.debug:
         directives += directives_debug
+        directives += directives_mva
 
     init_frame = RDataFrame(args.tree, args.input)
     dfs, output_br_names = process_directives(directives, init_frame)
