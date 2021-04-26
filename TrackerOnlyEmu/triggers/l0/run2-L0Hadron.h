@@ -1,6 +1,6 @@
 // Stolen from:
 //   https://gitlab.cern.ch/lhcb-slb/B02DplusTauNu/-/blob/master/tuple_processing_chain/emulate_L0Hadron_TOS_RLc.py
-// Last Change: Tue Apr 20, 2021 at 02:33 AM +0200
+// Last Change: Mon Apr 26, 2021 at 10:45 PM +0200
 //
 #ifndef _RUN2_L0_HADRON_
 #define _RUN2_L0_HADRON_
@@ -67,6 +67,7 @@ double singlePartEt( double P, double PT, double realET,
 
   double smearFactor = hist->GetRandom();
   double smearedET   = realET * ( 1 - smearFactor );
+  if ( smearedET < 0 ) smearedET = 0;
   if ( smearedET > 6100 ) smearedET = 6100;  // Due to limitation of HCAL
 
   return smearedET;
@@ -111,6 +112,7 @@ double twoPartEt( double smearedET1, double smearedET2, bool isShared,
                   double missFrac ) {
   double ET = smearedET1;
   if ( isShared ) ET = ( ET + smearedET2 ) * missFrac;
+  if ( ET < 0 ) ET = 0;
   if ( ET > 6100 ) ET = 6100;
   return ET;
 }
