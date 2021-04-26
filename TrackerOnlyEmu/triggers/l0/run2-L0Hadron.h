@@ -1,6 +1,6 @@
 // Stolen from:
 //   https://gitlab.cern.ch/lhcb-slb/B02DplusTauNu/-/blob/master/tuple_processing_chain/emulate_L0Hadron_TOS_RLc.py
-// Last Change: Mon Apr 26, 2021 at 10:45 PM +0200
+// Last Change: Tue Apr 27, 2021 at 01:23 AM +0200
 //
 #ifndef _RUN2_L0_HADRON_
 #define _RUN2_L0_HADRON_
@@ -19,8 +19,9 @@ using std::vector;
 // Configurables //
 ///////////////////
 
-const int P_BIN  = 10;
-const int PT_BIN = 6;
+const int P_BIN        = 10;
+const int PT_BIN       = 6;
+const int TOT_FRAC_BIN = 10;
 
 const double P_LOW   = 0;
 const double P_HIGH  = 1e5;
@@ -102,7 +103,7 @@ double missingFraction( double rDiff, int region1, int region2,
   if ( region1 == 1 ) histo = histoMissingInner;
 
   auto   bin      = histo->FindBin( rDiff );
-  auto   totFrac  = histo->GetBinContent( P_BIN );
+  auto   totFrac  = histo->GetBinContent( TOT_FRAC_BIN );
   double missFrac = histo->GetBinContent( bin ) / totFrac;
   return missFrac;
 }
