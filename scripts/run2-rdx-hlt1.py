@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Author: Yipeng Sun
-# Last Change: Fri Apr 23, 2021 at 03:50 AM +0200
+# Last Change: Mon Apr 26, 2021 at 05:57 PM +0200
 
 from argparse import ArgumentParser
 from itertools import combinations
@@ -47,7 +47,7 @@ TWO_TRACK_SPEC_BRANCHES = {
     'P': 'P',
     'TRCHI2DOF': 'TRACK_CHI2NDOF',
     'BPVIPCHI2': 'IPCHI2_OWNPV',
-    'TRCHOSTPROB': 'TRACK_GhostProb',
+    'TRGHOSTPROB': 'TRACK_GhostProb',
     'PX': 'PX',
     'PY': 'PY',
 }
@@ -237,38 +237,38 @@ if __name__ == '__main__':
     for i, j in combinations(range(1, 5), 2):
         directives_mva.append(
             EXEC('Define', 'mva_score_{}_{}'.format(i, j),
-            '{}_Matrixnet_Hlt1TwoTrackMVAEmulations_{}_{}'.format(
-                args.Bmeson, i, j), True))
+                 '{}_Matrixnet_Hlt1TwoTrackMVAEmulations_{}_{}'.format(
+                     args.Bmeson, i, j), True))
         directives_mva.append(
             EXEC('Define', 'mva_dira_{}_{}'.format(i, j),
-            '{}_DIRA_OWNPV_COMB_{}_{}'.format(args.Bmeson, i, j), True))
+                 '{}_DIRA_OWNPV_COMB_{}_{}'.format(args.Bmeson, i, j), True))
         directives_mva.append(
             EXEC('Define', 'mva_doca_{}_{}'.format(i, j),
-            '{}_DOCA_COMB_{}_{}'.format(args.Bmeson, i, j), True))
+                 '{}_DOCA_COMB_{}_{}'.format(args.Bmeson, i, j), True))
         directives_mva.append(
             EXEC('Define', 'mva_eta_{}_{}'.format(i, j),
-            '{}_ETA_COMB_{}_{}'.format(args.Bmeson, i, j), True))
+                 '{}_ETA_COMB_{}_{}'.format(args.Bmeson, i, j), True))
         directives_mva.append(
             EXEC('Define', 'mva_ip_chi2_{}_{}'.format(i, j),
-            '{}_IPCHI2_OWNPV_COMB_{}_{}'.format(args.Bmeson, i, j), True))
+                 '{}_IPCHI2_OWNPV_COMB_{}_{}'.format(args.Bmeson, i, j), True))
         directives_mva.append(
             EXEC('Define', 'mva_pt_{}_{}'.format(i, j),
-            '{}_PT_COMB_{}_{}'.format(args.Bmeson, i, j), True))
+                 '{}_PT_COMB_{}_{}'.format(args.Bmeson, i, j), True))
         directives_mva.append(
             EXEC('Define', 'mva_p_{}_{}'.format(i, j),
-            '{}_P_COMB_{}_{}'.format(args.Bmeson, i, j), True))
+                 '{}_P_COMB_{}_{}'.format(args.Bmeson, i, j), True))
         directives_mva.append(
             EXEC('Define', 'mva_vd_chi2_{}_{}'.format(i, j),
-            '{}_VDCHI2_OWNPV_COMB_{}_{}'.format(args.Bmeson, i, j), True))
+                 '{}_VDCHI2_OWNPV_COMB_{}_{}'.format(args.Bmeson, i, j), True))
         directives_mva.append(
             EXEC('Define', 'mva_vertex_chi2_{}_{}'.format(i, j),
-            '{}_VERTEX_CHI2_COMB_{}_{}'.format(args.Bmeson, i, j), True))
+                 '{}_VERTEX_CHI2_COMB_{}_{}'.format(args.Bmeson, i, j), True))
         directives_mva.append(
             EXEC('Define', 'mva_vertex_ndof_{}_{}'.format(i, j),
-            '{}_VERTEX_NDOF_COMB_{}_{}'.format(args.Bmeson, i, j), True))
+                 '{}_VERTEX_NDOF_COMB_{}_{}'.format(args.Bmeson, i, j), True))
         directives_mva.append(
             EXEC('Define', 'mva_mcorr_{}_{}'.format(i, j),
-            '{}_MCORR_OWNPV_COMB_{}_{}'.format(args.Bmeson, i, j), True))
+                 '{}_MCORR_OWNPV_COMB_{}_{}'.format(args.Bmeson, i, j), True))
 
     if args.debug:
         directives += directives_debug
