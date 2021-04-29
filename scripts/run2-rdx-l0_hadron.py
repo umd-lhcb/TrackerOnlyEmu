@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Author: Yipeng Sun
-# Last Change: Fri Apr 23, 2021 at 04:10 AM +0200
+# Last Change: Thu Apr 29, 2021 at 02:55 PM +0200
 # Stolen from: https://gitlab.cern.ch/lhcb-slb/B02DplusTauNu/-/blob/master/tuple_processing_chain/emulate_L0Hadron_TOS_RLc.py
 
 from argparse import ArgumentParser
@@ -113,6 +113,11 @@ if __name__ == '__main__':
 
     if args.debug:
         directives += directives_debug
+        # Apply the nSPDHits cut
+        directives.append(
+            EXEC('Filter', instruct='NumSPDHits < 450'))
+        directives.append(
+            EXEC('Define', 'nspd_hits', 'NumSPDHits', True))
 
     init_frame = RDataFrame(args.tree, args.input)
     dfs, output_br_names = process_directives(directives, init_frame)

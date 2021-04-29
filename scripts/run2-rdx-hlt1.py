@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Author: Yipeng Sun
-# Last Change: Mon Apr 26, 2021 at 05:57 PM +0200
+# Last Change: Thu Apr 29, 2021 at 02:39 PM +0200
 
 from argparse import ArgumentParser
 from itertools import combinations
@@ -213,6 +213,8 @@ if __name__ == '__main__':
         EXEC('Define', 'k_p', 'k_P / 1e3', True),
         EXEC('Define', 'pi_pt', 'pi_PT / 1e3', True),
         EXEC('Define', 'pi_p', 'pi_P / 1e3', True),
+        EXEC('Define', 'mu_pt', 'mu_PT / 1e3', True),
+        EXEC('Define', 'mu_p', 'mu_P / 1e3', True),
         EXEC('Define', 'k_pi_apt', 'computePt(k_PX+pi_PX, k_PY+pi_PY) / 1e3',
              True),
 
@@ -223,14 +225,17 @@ if __name__ == '__main__':
         EXEC('Define', 'pi_chi2ndof', 'pi_TRACK_CHI2NDOF', True),
         EXEC('Define', 'pi_ipchi2', 'pi_IPCHI2_OWNPV', True),
         EXEC('Define', 'pi_ghost', 'pi_TRACK_GhostProb', True),
+        EXEC('Define', 'mu_chi2ndof', 'mu_TRACK_CHI2NDOF', True),
+        EXEC('Define', 'mu_ipchi2', 'mu_IPCHI2_OWNPV', True),
+        EXEC('Define', 'mu_ghost', 'mu_TRACK_GhostProb', True),
 
         # Angular variables
-        EXEC('Define', 'mu_theta', 'theta(mu_PZ, mu_P)', True),
         EXEC('Define', 'k_theta', 'theta(k_PZ, k_P)', True),
-        EXEC('Define', 'pi_theta', 'theta(pi_PZ, pi_P)', True),
-        EXEC('Define', 'mu_phi', 'phi(mu_PX, mu_PY)', True),
         EXEC('Define', 'k_phi', 'phi(k_PX, k_PY)', True),
+        EXEC('Define', 'pi_theta', 'theta(pi_PZ, pi_P)', True),
         EXEC('Define', 'pi_phi', 'phi(pi_PX, pi_PY)', True),
+        EXEC('Define', 'mu_theta', 'theta(mu_PZ, mu_P)', True),
+        EXEC('Define', 'mu_phi', 'phi(mu_PX, mu_PY)', True),
     ]
 
     directives_mva = []
@@ -273,6 +278,11 @@ if __name__ == '__main__':
     if args.debug:
         directives += directives_debug
         directives += directives_mva
+        # Apply the nSPDHits cut
+        directives.append(
+            EXEC('Filter', instruct='NumSPDHits < 450'))
+        directives.append(
+            EXEC('Define', 'nspd_hits', 'NumSPDHits', True))
 
     init_frame = RDataFrame(args.tree, args.input)
     dfs, output_br_names = process_directives(directives, init_frame)
