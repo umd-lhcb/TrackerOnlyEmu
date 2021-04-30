@@ -2,7 +2,7 @@
 #
 # Author: Yipeng Sun
 # License: BSD 2-clause
-# Last Change: Thu Apr 01, 2021 at 12:17 AM +0200
+# Last Change: Fri Apr 30, 2021 at 02:48 PM +0200
 
 from dataclasses import dataclass
 from ROOT import RDataFrame
@@ -42,3 +42,10 @@ def process_directives(directives, init_frame):
             branches.push_back(dir.branch)
 
     return frames, branches
+
+
+def merge_vectors(*vecs, template='string'):
+    base = vector(template)()
+    for v in vecs:
+        base.insert(base.end(), v.begin(), v.end())
+    return base
