@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Author: Yipeng Sun
-# Last Change: Thu Apr 29, 2021 at 02:55 PM +0200
+# Last Change: Fri May 07, 2021 at 12:53 AM +0200
 # Stolen from: https://gitlab.cern.ch/lhcb-slb/B02DplusTauNu/-/blob/master/tuple_processing_chain/emulate_L0GlobalTIS.py
 
 from argparse import ArgumentParser
@@ -69,14 +69,14 @@ if __name__ == '__main__':
     args = parse_input()
 
     directives = [
-        EXEC('Define', '{}_true_pz'.format(args.Bmeson),
-             '{}_TRUEP_Z'.format(args.Bmeson), True),
-        EXEC('Define', '{}_true_pt'.format(args.Bmeson),
-             '{}_TRUEPT'.format(args.Bmeson), True),
+        EXEC('Define', '{}_pz'.format(args.Bmeson),
+             '{}_PZ'.format(args.Bmeson), True),
+        EXEC('Define', '{}_pt'.format(args.Bmeson),
+             '{}_PT'.format(args.Bmeson), True),
         EXEC('Define', '{}_l0_global_tis_emu'.format(args.Bmeson),
              'L0GlobalTisTriggerEmu({}, {}, {}, hResp)'.format(
-                 '{}_true_pz'.format(args.Bmeson),
-                 '{}_true_pt'.format(args.Bmeson),
+                 '{}_pz'.format(args.Bmeson),
+                 '{}_pt'.format(args.Bmeson),
                  args.year), True),
     ]
 
@@ -91,10 +91,10 @@ if __name__ == '__main__':
         EXEC('Define', 'el', 'FitVar_El / 1e3', True),
 
         # Log of B meson momenta
-        EXEC('Define', 'log_{}_true_pz'.format(args.Bmeson),
-             'TMath::Log({}_true_pz)'.format(args.Bmeson), True),
-        EXEC('Define', 'log_{}_true_pt'.format(args.Bmeson),
-             'TMath::Log({}_true_pt)'.format(args.Bmeson), True),
+        EXEC('Define', 'log_{}_pz'.format(args.Bmeson),
+             'TMath::Log({}_pz)'.format(args.Bmeson), True),
+        EXEC('Define', 'log_{}_pt'.format(args.Bmeson),
+             'TMath::Log({}_pt)'.format(args.Bmeson), True),
     ]
 
     if args.debug:
