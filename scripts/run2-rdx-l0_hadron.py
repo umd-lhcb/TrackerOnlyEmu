@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Author: Yipeng Sun
-# Last Change: Thu Apr 29, 2021 at 02:55 PM +0200
+# Last Change: Sun May 16, 2021 at 10:07 PM +0200
 # Stolen from: https://gitlab.cern.ch/lhcb-slb/B02DplusTauNu/-/blob/master/tuple_processing_chain/emulate_L0Hadron_TOS_RLc.py
 
 from argparse import ArgumentParser
@@ -85,15 +85,17 @@ if __name__ == '__main__':
         EXEC('Define', 'miss_k_pi',
              'missingFraction(rdiff_k_pi, k_L0Calo_HCAL_region, pi_L0Calo_HCAL_region, hMissIn, hMissOut)',
              True),
-        EXEC('Define', 'k_et_emu',
+        EXEC('Define', 'k_et_emu_no_bdt',
              'twoPartEt(k_et_smeared, pi_et_smeared, shared_k_pi, miss_k_pi)',
              True),
-        EXEC('Define', 'pi_et_emu',
+        EXEC('Define', 'pi_et_emu_no_bdt',
              'twoPartEt(pi_et_smeared, k_et_smeared, shared_k_pi, miss_k_pi)',
              True),
-        EXEC('Define', 'd0_et_emu', 'TMath::Max(k_et_emu, pi_et_emu)', True),
-        EXEC('Define', 'd0_l0_hadron_tos_emu',
-             'L0HadronTriggerEmu(d0_et_emu, {})'.format(args.year), True),
+        EXEC('Define', 'd0_et_emu_no_bdt',
+             'TMath::Max(k_et_emu_no_bdt, pi_et_emu_no_bdt)', True),
+        EXEC('Define', 'd0_l0_hadron_tos_emu_no_bdt',
+             'L0HadronTriggerEmu(d0_et_emu_no_bdt, {})'.format(args.year),
+             True),
     ]
 
     directives_debug = [
