@@ -1,5 +1,6 @@
 include TrackerOnlyEmu/triggers/l0/*.root
 include TrackerOnlyEmu/triggers/l0/*.h
+include TrackerOnlyEmu/triggers/l0/*.pickle
 
 include TrackerOnlyEmu/triggers/hlt1/*.h
 
