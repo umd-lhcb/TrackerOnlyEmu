@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Author: Yipeng Sun
-# Last Change: Mon May 17, 2021 at 06:18 PM +0200
+# Last Change: Mon May 17, 2021 at 11:03 PM +0200
 # Based on the script 'regmva.py' shared by Patrick Owen
 
 import pickle
@@ -18,6 +18,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.ensemble import AdaBoostRegressor
 from sklearn.tree import DecisionTreeRegressor
 
+from TrackerOnlyEmu.loader import load_cpp
 from TrackerOnlyEmu.executor import ExecDirective as EXEC
 from TrackerOnlyEmu.executor import process_directives
 
@@ -36,7 +37,7 @@ BDT_TRAIN_BRANCHES = [
 
 REGRESSION_BRANCHES = [
     EXEC('Define', 'd0_et_real',
-         'TMath::Max(k_L0Calo_HCAL_realET, pi_L0Calo_HCAL_realET)', False),
+         'capHcalResp(k_L0Calo_HCAL_realET, pi_L0Calo_HCAL_realET)', True),
     EXEC('Define', 'd0_et_diff', 'd0_et_real - d0_et_emu_no_bdt', True),
 ]
 
@@ -69,6 +70,9 @@ enable debug mode.
 specify debug ntuple output location.
 ''')
 
+    parser.add_argument('--load-bdt', default=None, help='''
+optionally specify serialized BDT to load.''')
+
     return parser.parse_args()
 
 
@@ -76,7 +80,7 @@ specify debug ntuple output location.
 # Load C++ definitions #
 ########################
 
-gInterpreter.Declare('#include <TMath.h>')
+load_cpp('<triggers/l0/run2-L0Hadron.h>')
 
 
 #############
@@ -85,6 +89,7 @@ gInterpreter.Declare('#include <TMath.h>')
 
 if __name__ == '__main__':
     args = parse_input()
+
     init_frame = RDataFrame(args.tree, args.input)
 
     bdt_input_vars = np.array(
@@ -99,23 +104,30 @@ if __name__ == '__main__':
     bdt_input_vars_train, _, regression_var_train, _ = train_test_split(
         bdt_input_vars_dev, regression_var_dev, test_size=0.2, random_state=492)
 
-    print('Start training for a regression BDT...')
-    rng = np.random.RandomState(1)
-    bdt = AdaBoostRegressor(DecisionTreeRegressor(max_depth=4),
-                            n_estimators=300, random_state=rng)
-    bdt.fit(bdt_input_vars_train, regression_var_train)
-    print('BDT fitted.')
+    if not args.load_bdt:
+        print('Start training for a regression BDT...')
+        rng = np.random.RandomState(1)
+        bdt = AdaBoostRegressor(DecisionTreeRegressor(max_depth=4),
+                                n_estimators=300, random_state=rng)
+        bdt.fit(bdt_input_vars_train, regression_var_train)
+        print('BDT fitted.')
 
-    pickle.dump(bdt, open(args.output, 'wb'))
+        pickle.dump(bdt, open(args.output, 'wb'))
+
+    else:
+        print('Load already serialized BDT...')
+        bdt = pickle.load(open(args.load_bdt, 'rb'))
 
     if args.debug:
+        print('Generate debug ntuple...')
         d0_et_diff_pred = bdt.predict(bdt_input_vars)
         regression_var['d0_et_diff_pred'] = d0_et_diff_pred
 
         debug_rdf = ROOT.RDF.MakeNumpyDataFrame(regression_var)
-        debug_rdf.Define('et_diff', 'd0_et_diff_pred - d0_et_diff')
+        final_df = debug_rdf.Define(
+            'et_pred_real_diff', 'd0_et_diff_pred - d0_et_diff')
 
         output_br_names.push_back('d0_et_diff_pred')
-        output_br_names.push_back('et_diff')
+        output_br_names.push_back('et_pred_real_diff')
 
-        debug_rdf.Snapshot(args.tree, args.debug_ntuple, output_br_names)
+        final_df.Snapshot(args.tree, args.debug_ntuple, output_br_names)
