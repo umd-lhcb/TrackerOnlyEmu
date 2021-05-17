@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Author: Yipeng Sun
-# Last Change: Mon May 17, 2021 at 06:15 PM +0200
+# Last Change: Mon May 17, 2021 at 06:18 PM +0200
 # Based on the script 'regmva.py' shared by Patrick Owen
 
 import pickle
@@ -39,14 +39,6 @@ REGRESSION_BRANCHES = [
          'TMath::Max(k_L0Calo_HCAL_realET, pi_L0Calo_HCAL_realET)', False),
     EXEC('Define', 'd0_et_diff', 'd0_et_real - d0_et_emu_no_bdt', True),
 ]
-
-
-###########
-# Helpers #
-###########
-
-def nested_array(array_dict):
-    pass
 
 
 #################################

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Author: Yipeng Sun
-# Last Change: Mon May 17, 2021 at 02:28 PM +0200
+# Last Change: Mon May 17, 2021 at 06:21 PM +0200
 # Stolen from: https://gitlab.cern.ch/lhcb-slb/B02DplusTauNu/-/blob/master/tuple_processing_chain/emulate_L0Hadron_TOS_RLc.py
 
 import ROOT
@@ -98,7 +98,7 @@ if __name__ == '__main__':
         EXEC('Define', 'd0_et_emu_no_bdt',
              'TMath::Max(k_et_emu_no_bdt, pi_et_emu_no_bdt)', True),
         EXEC('Define', 'd0_l0_hadron_tos_emu_no_bdt',
-             'L0HadronTriggerEmu(d0_et_emu_no_bdt, {})'.format(args.year),
+             'l0HadronTriggerEmu(d0_et_emu_no_bdt, {})'.format(args.year),
              True),
     ]
 
