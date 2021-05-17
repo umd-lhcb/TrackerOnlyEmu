@@ -24,14 +24,13 @@
         };
         python = pkgs.python3;
         pythonPackages = python.pkgs;
-        root = pkgs.root;
       in
       {
         devShell = pkgs.mkShell rec {
           name = "TrackerOnlyEmu-dev";
           buildInputs = with pythonPackages; [
             pkgs.clang-tools # For clang-format
-            root
+            pkgs.root
 
             # Auto completion
             jedi
@@ -61,9 +60,6 @@
 
             # allow for the environment to pick up packages installed with virtualenv
             export PYTHONPATH=$VENV/${python.sitePackages}/:$PYTHONPATH
-
-            # fix libstdc++.so not found error
-            export LD_LIBRARY_PATH=${pkgs.stdenv.cc.cc.lib}/lib:$LD_LIBRARY_PATH
           '';
         };
       });
