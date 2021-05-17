@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 #
 # Author: Yipeng Sun
-# Last Change: Mon May 17, 2021 at 06:21 PM +0200
+# Last Change: Tue May 18, 2021 at 12:43 AM +0200
 # Stolen from: https://gitlab.cern.ch/lhcb-slb/B02DplusTauNu/-/blob/master/tuple_processing_chain/emulate_L0Hadron_TOS_RLc.py
+
+import pickle
+import numpy as np
 
 import ROOT
 ROOT.PyConfig.IgnoreCommandLineOptions = True  # Don't hijack argparse!
@@ -15,6 +18,19 @@ from ROOT import gInterpreter, RDataFrame
 from TrackerOnlyEmu.loader import load_file, load_cpp
 from TrackerOnlyEmu.executor import ExecDirective as EXEC
 from TrackerOnlyEmu.executor import process_directives
+
+
+#################
+# Configurables #
+#################
+
+BDT_TRAIN_BRANCHES = [
+    'd0_PT',
+    'd0_P',
+    'k_L0Calo_HCAL_realET',
+    'pi_L0Calo_HCAL_realET',
+    'rdiff_k_pi'
+]
 
 
 #################################
@@ -69,6 +85,7 @@ auto hMissOut = static_cast<TH1D*>(histoCluster->Get("missing_with_radial_outer"
 '''
 gInterpreter.Declare(epilogue)
 
+bdt = pickle.load(open(load_file('<triggers/l0/bdt.pickle>'), 'rb'))
 
 #################
 # Apply trigger #
@@ -128,9 +145,37 @@ if __name__ == '__main__':
     init_frame = RDataFrame(args.tree, args.input)
     dfs, output_br_names = process_directives(directives, init_frame)
 
+    # Apply regression BDT for final HCAL ET correction
+    bdt_input_vars = np.array(
+        list(dfs[-1].AsNumpy(columns=BDT_TRAIN_BRANCHES).values())).T
+    d0_et_corr = bdt.predict(bdt_input_vars)
+
     # Always keep run and event numbers
     output_br_names.push_back('runNumber')
     output_br_names.push_back('eventNumber')
 
     # Output
-    dfs[-1].Snapshot(args.tree, args.output, output_br_names)
+    output_vars = dfs[-1].AsNumpy(columns=[str(s) for s in output_br_names])
+    output_vars['d0_et_corr'] = d0_et_corr
+
+    # Need to enforce 'bool' type for branches like 'shared_k_pi
+    for br, arr in output_vars.items():
+        if arr.dtype == np.dtype('O'):
+            arr = arr.astype(int)
+            output_vars[br] = arr
+
+    bdt_frame = ROOT.RDF.MakeNumpyDataFrame(output_vars)
+
+    # HCAL ET and L0Hadron trigger w/ all corrections
+    d0_et_emu_frame = bdt_frame.Define(
+        'd0_et_emu', 'capHcalResp(d0_et_emu_no_bdt + d0_et_corr)')
+    l0hadron_trg_frame = d0_et_emu_frame.Define(
+        'd0_l0_hadron_tos_emu',
+        'l0HadronTriggerEmu(d0_et_emu, {})'.format(args.year))
+
+    # Keep the HCAL ET w/ BDT corrections
+    output_br_names.push_back('d0_et_corr')
+    output_br_names.push_back('d0_et_emu')
+    output_br_names.push_back('d0_l0_hadron_tos_emu')
+
+    l0hadron_trg_frame.Snapshot(args.tree, args.output, output_br_names)

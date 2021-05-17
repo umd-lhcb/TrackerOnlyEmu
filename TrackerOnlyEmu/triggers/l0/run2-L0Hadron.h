@@ -1,6 +1,6 @@
 // Stolen from:
 //   https://gitlab.cern.ch/lhcb-slb/B02DplusTauNu/-/blob/master/tuple_processing_chain/emulate_L0Hadron_TOS_RLc.py
-// Last Change: Mon May 17, 2021 at 11:02 PM +0200
+// Last Change: Tue May 18, 2021 at 12:44 AM +0200
 //
 #ifndef _RUN2_L0_HADRON_
 #define _RUN2_L0_HADRON_
@@ -34,10 +34,14 @@ TRandom3 SHARED_EFF = TRandom3( 41 );
 // Single particle HCAL response //
 ///////////////////////////////////
 
-double capHcalResp( double ET1, double ET2 ) {
-  double ET = TMath::Max( ET1, ET2 );
+double capHcalResp( double ET ) {
   if ( ET > 6100 ) return 6100;
   return ET;
+}
+
+double capHcalResp( double ET1, double ET2 ) {
+  double ET = TMath::Max( ET1, ET2 );
+  return capHcalResp( ET );
 }
 
 vector<vector<TH1D*> > readSinglePartResp( TFile* ntp ) {
