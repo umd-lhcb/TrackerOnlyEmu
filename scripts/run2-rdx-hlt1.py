@@ -1,7 +1,11 @@
 #!/usr/bin/env python3
 #
 # Author: Yipeng Sun
-# Last Change: Thu Apr 29, 2021 at 02:39 PM +0200
+# Last Change: Mon May 17, 2021 at 02:27 PM +0200
+
+import ROOT
+ROOT.PyConfig.IgnoreCommandLineOptions = True  # Don't hijack argparse!
+ROOT.PyConfig.DisableRootLogon = True  # Don't read .rootlogon.py
 
 from argparse import ArgumentParser
 from itertools import combinations

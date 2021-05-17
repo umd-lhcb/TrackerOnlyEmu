@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
 #
 # Author: Yipeng Sun
-# Last Change: Sun May 16, 2021 at 10:07 PM +0200
+# Last Change: Mon May 17, 2021 at 02:28 PM +0200
 # Stolen from: https://gitlab.cern.ch/lhcb-slb/B02DplusTauNu/-/blob/master/tuple_processing_chain/emulate_L0Hadron_TOS_RLc.py
+
+import ROOT
+ROOT.PyConfig.IgnoreCommandLineOptions = True  # Don't hijack argparse!
+ROOT.PyConfig.DisableRootLogon = True  # Don't read .rootlogon.py
 
 from argparse import ArgumentParser
 
