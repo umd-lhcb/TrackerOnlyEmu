@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Author: Yipeng Sun
-# Last Change: Mon May 17, 2021 at 03:40 PM +0200
+# Last Change: Mon May 17, 2021 at 06:15 PM +0200
 # Based on the script 'regmva.py' shared by Patrick Owen
 
 import pickle
@@ -35,7 +35,9 @@ BDT_TRAIN_BRANCHES = [
 ]
 
 REGRESSION_BRANCHES = [
-    'd0_et_emu_no_bdt'
+    EXEC('Define', 'd0_et_real',
+         'TMath::Max(k_L0Calo_HCAL_realET, pi_L0Calo_HCAL_realET)', False),
+    EXEC('Define', 'd0_et_diff', 'd0_et_real - d0_et_emu_no_bdt', True),
 ]
 
 
@@ -43,8 +45,8 @@ REGRESSION_BRANCHES = [
 # Helpers #
 ###########
 
-def generate_exe(branches, keep=True):
-    return [EXEC('Define', br, br, keep) for br in branches]
+def nested_array(array_dict):
+    pass
 
 
 #################################
@@ -60,7 +62,7 @@ specify input ntuple file.
 ''')
 
     parser.add_argument('output', help='''
-specify output joblib dump.
+specify output pickle dump.
 ''')
 
     parser.add_argument('-t', '--tree', default='TupleB0/DecayTree', help='''
@@ -93,33 +95,26 @@ if __name__ == '__main__':
     args = parse_input()
     init_frame = RDataFrame(args.tree, args.input)
 
-    directives_bdt_input = generate_exe(BDT_TRAIN_BRANCHES)
-    print(directives_bdt_input)
-    dfs, _ = process_directives(directives_bdt_input, init_frame)
-    bdt_input_vars = dfs[-1].AsNumpy()
+    bdt_input_vars = np.array(
+        list(init_frame.AsNumpy(columns=BDT_TRAIN_BRANCHES).values())).T
 
-    directives_regression = generate_exe(REGRESSION_BRANCHES, False)
-    directives_regression.append(EXEC(
-        'Define', 'd0_et_real',
-        'TMath::Max(k_L0Calo_HCAL_realET, pi_L0Calo_HCAL_realET)', False))
-    directives_regression.append(EXEC(
-        'Define', 'd0_et_diff', 'd0_et_real - d0_et_emu_no_bdt', True))
-    final_dfs, output_br_names = process_directives(
-        directives_regression, dfs[-1])
-    regression_var = final_dfs[-1].AsNumpy(columns=['d0_et_diff'])
+    dfs, output_br_names = process_directives(REGRESSION_BRANCHES, init_frame)
+    regression_var = dfs[-1].AsNumpy(columns=['d0_et_diff'])
 
     bdt_input_vars_dev, _, regression_var_dev, _ = train_test_split(
-        bdt_input_vars, regression_var, test_size=0.2, random_state=42)
+        bdt_input_vars, regression_var['d0_et_diff'],
+        test_size=0.2, random_state=42)
     bdt_input_vars_train, _, regression_var_train, _ = train_test_split(
         bdt_input_vars_dev, regression_var_dev, test_size=0.2, random_state=492)
 
+    print('Start training for a regression BDT...')
     rng = np.random.RandomState(1)
     bdt = AdaBoostRegressor(DecisionTreeRegressor(max_depth=4),
                             n_estimators=300, random_state=rng)
     bdt.fit(bdt_input_vars_train, regression_var_train)
     print('BDT fitted.')
 
-    pickle.dump(bdt, open(args.output))
+    pickle.dump(bdt, open(args.output, 'wb'))
 
     if args.debug:
         d0_et_diff_pred = bdt.predict(bdt_input_vars)
