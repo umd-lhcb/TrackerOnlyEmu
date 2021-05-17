@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Author: Yipeng Sun
-# Last Change: Mon May 17, 2021 at 11:03 PM +0200
+# Last Change: Mon May 17, 2021 at 11:09 PM +0200
 # Based on the script 'regmva.py' shared by Patrick Owen
 
 import pickle
@@ -120,10 +120,12 @@ if __name__ == '__main__':
 
     if args.debug:
         print('Generate debug ntuple...')
-        d0_et_diff_pred = bdt.predict(bdt_input_vars)
-        regression_var['d0_et_diff_pred'] = d0_et_diff_pred
+        debug_output = dfs[-1].AsNumpy()
 
-        debug_rdf = ROOT.RDF.MakeNumpyDataFrame(regression_var)
+        d0_et_diff_pred = bdt.predict(bdt_input_vars)
+        debug_output['d0_et_diff_pred'] = d0_et_diff_pred
+
+        debug_rdf = ROOT.RDF.MakeNumpyDataFrame(debug_output)
         final_df = debug_rdf.Define(
             'et_pred_real_diff', 'd0_et_diff_pred - d0_et_diff')
 
