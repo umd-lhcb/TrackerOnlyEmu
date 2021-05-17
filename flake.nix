@@ -2,11 +2,16 @@
   description = "A collection of tools for emulating tracker responses.";
 
   inputs = rec {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-20.09";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
+    root-curated = {
+      url = "github:umd-lhcb/root-curated";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.flake-utils.follows = "flake-utils";
+    };
   };
 
-  outputs = { self, nixpkgs, flake-utils }:
+  outputs = { self, nixpkgs, flake-utils, root-curated }:
     {
       overlay = import ./nix/overlay.nix;
     }
@@ -15,7 +20,7 @@
       let
         pkgs = import nixpkgs {
           inherit system;
-          overlays = [ self.overlay ];
+          overlays = [ self.overlay root-curated.overlay ];
         };
         python = pkgs.python3;
         pythonPackages = python.pkgs;
