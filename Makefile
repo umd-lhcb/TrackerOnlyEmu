@@ -1,5 +1,5 @@
 # Author: Yipeng Sun
-# Last Change: Mon May 17, 2021 at 11:06 PM +0200
+# Last Change: Wed May 19, 2021 at 12:06 AM +0200
 
 .PHONY: sdist clean install install-egg
 
@@ -18,6 +18,8 @@ install:
 
 install-egg:
 	@python ./setup.py install
+
+test-all: test-hlt1 test-l0-hadron test-l0-global-tis
 
 train-l0-hadron-bdt:
 	@mkdir -p gen

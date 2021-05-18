@@ -5,6 +5,17 @@ reimplementation of the trigger emulation methods described in
 
 The original implementation are available at [`B02DplusTauNu`](https://gitlab.cern.ch/lhcb-slb/B02DplusTauNu).
 
+This repository aims at fully self-containing. Both the BDT training ntuple and
+a sample ntuple for trigger emulation are provided.
+
+If you want to try out the trigger emulation:
+```
+make install
+make test-all
+```
+
+Note that you should have Python 3.8+ and ROOT 6.22+ installed.
+
 
 ## Add HLT1 info extraction tool to DaVinci
 We've tested the code work with `DaVinci/v45r6`. The instructions are adapted from the
