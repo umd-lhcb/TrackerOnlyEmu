@@ -7,7 +7,6 @@
     root-curated = {
       url = "github:umd-lhcb/root-curated";
       inputs.nixpkgs.follows = "nixpkgs";
-      inputs.flake-utils.follows = "flake-utils";
     };
   };
 

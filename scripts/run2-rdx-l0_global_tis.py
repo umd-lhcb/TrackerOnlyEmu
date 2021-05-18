@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Author: Yipeng Sun
-# Last Change: Mon May 17, 2021 at 02:27 PM +0200
+# Last Change: Wed May 19, 2021 at 12:27 AM +0200
 # Stolen from: https://gitlab.cern.ch/lhcb-slb/B02DplusTauNu/-/blob/master/tuple_processing_chain/emulate_L0GlobalTIS.py
 
 import ROOT
@@ -78,7 +78,7 @@ if __name__ == '__main__':
         EXEC('Define', '{}_pt'.format(args.Bmeson),
              '{}_PT'.format(args.Bmeson), True),
         EXEC('Define', '{}_l0_global_tis_emu'.format(args.Bmeson),
-             'L0GlobalTisTriggerEmu({}, {}, {}, hResp)'.format(
+             'l0GlobalTisTriggerEmu({}, {}, {}, hResp)'.format(
                  '{}_pz'.format(args.Bmeson),
                  '{}_pt'.format(args.Bmeson),
                  args.year), True),

@@ -1,6 +1,6 @@
 // Stolen from:
 //   https://gitlab.cern.ch/lhcb-slb/B02DplusTauNu/-/blob/master/tuple_processing_chain/emulate_L0Hadron_TOS_RLc.py
-// Last Change: Tue Apr 20, 2021 at 02:50 AM +0200
+// Last Change: Wed May 19, 2021 at 12:27 AM +0200
 //
 #ifndef _RUN2_L0_HADRON_
 #define _RUN2_L0_HADRON_
@@ -43,7 +43,7 @@ map<int, TH2F*> readL0GlobalTisResp( TFile* ntp ) {
 }
 
 // This is emulated as a weight in float
-float L0GlobalTisTriggerEmu( double PZ, double PT, int year,
+float l0GlobalTisTriggerEmu( double PZ, double PT, int year,
                              map<int, TH2F*> respHistos ) {
   auto hist = respHistos[year];
 
