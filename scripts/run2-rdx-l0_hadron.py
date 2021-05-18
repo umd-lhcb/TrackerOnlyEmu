@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Author: Yipeng Sun
-# Last Change: Tue May 18, 2021 at 12:43 AM +0200
+# Last Change: Wed May 19, 2021 at 12:01 AM +0200
 # Stolen from: https://gitlab.cern.ch/lhcb-slb/B02DplusTauNu/-/blob/master/tuple_processing_chain/emulate_L0Hadron_TOS_RLc.py
 
 import pickle
@@ -99,7 +99,10 @@ if __name__ == '__main__':
              'singlePartEt(k_P, k_PT, k_L0Calo_HCAL_realET, hResp)', True),
         EXEC('Define', 'pi_et_smeared',
              'singlePartEt(pi_P, pi_PT, pi_L0Calo_HCAL_realET, hResp)', True),
-        EXEC('Define', 'rdiff_k_pi', 'rDiff(k_X, k_Y, pi_X, pi_Y)', True),
+        EXEC('Define', 'rdiff_k_pi', 'rDiff({})'.format(
+                ', '.join([p+'_L0Calo_HCAL_'+d+'Projection'
+                           for p in ['k', 'pi'] for d in ['x', 'y']])),
+             True),
         EXEC('Define', 'shared_k_pi',
              'isShared(rdiff_k_pi, k_L0Calo_HCAL_region, pi_L0Calo_HCAL_region, hSharedIn, hSharedOut)',
              True),
