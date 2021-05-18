@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Author: Yipeng Sun
-# Last Change: Mon May 17, 2021 at 11:09 PM +0200
+# Last Change: Tue May 18, 2021 at 09:51 PM +0200
 # Based on the script 'regmva.py' shared by Patrick Owen
 
 import pickle
@@ -30,7 +30,7 @@ from TrackerOnlyEmu.executor import process_directives
 BDT_TRAIN_BRANCHES = [
     'd0_PT',
     'd0_P',
-    'k_L0Calo_HCAL_realET',
+    'k_L0Calo_HCAL_realET',  # NOTE: realET is tracker ET!
     'pi_L0Calo_HCAL_realET',
     'rdiff_k_pi'
 ]
