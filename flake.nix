@@ -1,13 +1,10 @@
 {
   description = "A collection of tools for emulating tracker responses.";
 
-  inputs = rec {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    flake-utils.url = "github:numtide/flake-utils";
-    root-curated = {
-      url = "github:umd-lhcb/root-curated";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+  inputs = {
+    root-curated.url = "github:umd-lhcb/root-curated";
+    nixpkgs.follows = "root-curated/nixpkgs";
+    flake-utils.follows = "root-curated/flake-utils";
   };
 
   outputs = { self, nixpkgs, flake-utils, root-curated }:
