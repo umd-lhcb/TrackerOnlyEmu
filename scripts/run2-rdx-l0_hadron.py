@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Author: Yipeng Sun
-# Last Change: Wed May 19, 2021 at 12:06 AM +0200
+# Last Change: Thu May 27, 2021 at 03:47 PM +0200
 # Stolen from: https://gitlab.cern.ch/lhcb-slb/B02DplusTauNu/-/blob/master/tuple_processing_chain/emulate_L0Hadron_TOS_RLc.py
 
 import pickle
@@ -135,6 +135,21 @@ if __name__ == '__main__':
         EXEC('Define', 'd0_pt', 'd0_PT / 1e3', True),
         EXEC('Define', 'k_pt', 'k_PT / 1e3', True),
         EXEC('Define', 'pi_pt', 'pi_PT / 1e3', True),
+
+        # Cut variable candidates
+        EXEC('Define', 'k_trg_et', 'k_L0Calo_HCAL_TriggerET', True),
+        EXEC('Define', 'k_trg_hcal_et', 'k_L0Calo_HCAL_TriggerHCALET', True),
+        EXEC('Define', 'pi_trg_et', 'pi_L0Calo_HCAL_TriggerET', True),
+        EXEC('Define', 'pi_trg_hcal_et', 'pi_L0Calo_HCAL_TriggerHCALET', True),
+        EXEC('Define', 'k_pi_trg_et_sum',
+             'capHcalResp(k_L0Calo_HCAL_TriggerET+ pi_L0Calo_HCAL_TriggerET)',
+             True),
+        EXEC('Define', 'k_pi_trg_hcal_et_sum',
+             'capHcalResp(k_L0Calo_HCAL_TriggerHCALET+pi_L0Calo_HCAL_TriggerHCALET)',
+             True),
+        EXEC('Define', 'k_pi_trg_et_cap',
+             'capHcalResp(k_L0Calo_HCAL_TriggerET, pi_L0Calo_HCAL_TriggerET)',
+             True),
     ]
 
     if args.debug:
