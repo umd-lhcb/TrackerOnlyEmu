@@ -74,6 +74,12 @@ This factor is obtained in the following way:
     ![formula](https://render.githubusercontent.com/render/math?math=\text{correction}%20=%20\left(1%20-%20\frac{0.8923}{0.9315}%20\right)%20=%200.042)
 
 
+## Comment on the transverse energy of ![D0](https://render.githubusercontent.com/render/math?math=D^0)
+
+First, the transverse energy is defined as ![E_T definition](https://render.githubusercontent.com/render/math?math=E_T%20=%20E%20\sin\theta).
+This is take from p. 4 of [this paper](https://arxiv.org/pdf/2008.11556.pdf).
+
+
 ## Acknowledgement
 Most of the source code are shamelessly stolen from [`B02DplusTauNu`](https://gitlab.cern.ch/lhcb-slb/B02DplusTauNu) analysis,
 with minor changes from us.
