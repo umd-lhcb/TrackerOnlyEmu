@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Author: Yipeng Sun
-# Last Change: Tue Jun 01, 2021 at 08:40 PM +0200
+# Last Change: Thu Jun 03, 2021 at 08:58 PM +0200
 # Stolen from: https://gitlab.cern.ch/lhcb-slb/B02DplusTauNu/-/blob/master/tuple_processing_chain/emulate_L0Hadron_TOS_RLc.py
 
 import pickle
@@ -135,6 +135,9 @@ if __name__ == '__main__':
         EXEC('Define', 'd0_pt', 'd0_PT / 1e3', True),
         EXEC('Define', 'k_pt', 'k_PT / 1e3', True),
         EXEC('Define', 'pi_pt', 'pi_PT / 1e3', True),
+        EXEC('Define', 'd0_pt_raw', 'd0_PT', True),
+        EXEC('Define', 'k_pt_raw', 'k_PT', True),
+        EXEC('Define', 'pi_pt_raw', 'pi_PT', True),
         EXEC('Define', 'rdiff_k_pi_wrong', 'rDiff(k_X, k_Y, pi_X, pi_Y)', True),
 
         # Cut variable candidates
