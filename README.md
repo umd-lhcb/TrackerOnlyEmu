@@ -76,7 +76,10 @@ This factor is obtained in the following way:
 
 ## Comment on the transverse energy of ![D0](https://render.githubusercontent.com/render/math?math=D^0)
 
-First, the transverse energy is defined as ![E_T definition](https://render.githubusercontent.com/render/math?math=E_T%20=%20E%20\sin\theta).
+First, the transverse energy is defined as:
+
+![E_T definition](https://render.githubusercontent.com/render/math?math=E_T%20=%20E%20\sin\theta).
+
 This is take from p. 4 of [this paper](https://arxiv.org/pdf/2008.11556.pdf).
 
 
