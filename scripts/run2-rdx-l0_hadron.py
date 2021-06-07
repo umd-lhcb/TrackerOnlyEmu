@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Author: Yipeng Sun
-# Last Change: Fri Jun 04, 2021 at 03:21 PM +0200
+# Last Change: Mon Jun 07, 2021 at 03:02 AM +0200
 # Stolen from: https://gitlab.cern.ch/lhcb-slb/B02DplusTauNu/-/blob/master/tuple_processing_chain/emulate_L0Hadron_TOS_RLc.py
 
 import pickle
@@ -156,6 +156,8 @@ if __name__ == '__main__':
              True),
         EXEC('Define', 'k_pi_trg_et_cap',
              'capHcalResp(k_L0Calo_HCAL_TriggerET, pi_L0Calo_HCAL_TriggerET)',
+             True),
+        EXEC('Define', 'd0_et_diff', 'k_pi_trg_et_cap - d0_et_emu_no_bdt',
              True),
     ]
 
