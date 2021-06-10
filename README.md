@@ -32,8 +32,6 @@ git lb-use Phys
 git lb-checkout Phys/<phys_version> Phys/LoKiPhys  # <phys_version> -> v26r6 for DaVinci/v45r6
 git lb-checkout Phys/<phys_version> Phys/DaVinciTypes
 git lb-checkout Phys/<phys_version> Phys/RelatedInfoTools
-git lb-use Analysis
-git lb-checkout Analysis/${analysis_version} Phys/DecayTreeTupleTrigger # <analysis_version> -> v21r6
 
 # Override our changes
 cp -r ./davinci/Phys DaVinciDev_<dv_version>
