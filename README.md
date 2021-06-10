@@ -1,4 +1,5 @@
 # TrackerOnlyEmu
+
 A collection of tools for emulating tracker responses. This is a partial
 reimplementation of the trigger emulation methods described in
 [_LHCb-INT-2019-025_](https://cds.cern.ch/record/2703802?ln=en).
@@ -18,11 +19,11 @@ Note that you should have Python 3.8+ and ROOT 6.22+ installed.
 
 
 ## Add HLT1 info extraction tool to DaVinci
+
 We've tested the code work with `DaVinci/v45r6`. The instructions are adapted from the
 [original `README.md`](https://gitlab.cern.ch/lhcb-slb/B02DplusTauNu/-/blob/master/tuple_production/tuple_tools_src/RelatedInfoTools/README.md)
 
 ```shell
-
 # Create a new DaVinci dev project
 lb-dev DaVinci/<dv_version>  # <dv_version> -> v45r6
 cd DaVinciDev_<dv_version>
@@ -70,17 +71,6 @@ This factor is obtained in the following way:
 4. Now compute the correction factor:
 
     ![formula](https://render.githubusercontent.com/render/math?math=\text{correction}%20=%20\left(1%20-%20\frac{0.8923}{0.9315}%20\right)%20=%200.042)
-
-
-## Comment on the transverse energy of ![D0](https://render.githubusercontent.com/render/math?math=D^0)
-
-First, the transverse energy is defined as (take from p. 4 of [this paper](https://arxiv.org/pdf/2008.11556.pdf)):
-
-![E_T definition](https://render.githubusercontent.com/render/math?math=E_T%20=%20E%20\sin\theta%20=%20\sqrt{m^2%20%2B%20p^2}%20\sin\theta)
-
-In the massless limit:
-
-![E_T p_T relation](https://render.githubusercontent.com/render/math?math=E_T%20\approx%20\sqrt{p^2}%20\sin\theta%20=%20p_T)
 
 
 ## Acknowledgement
