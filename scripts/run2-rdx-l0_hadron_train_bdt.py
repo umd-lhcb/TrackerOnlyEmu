@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Author: Yipeng Sun
-# Last Change: Tue Jun 22, 2021 at 06:37 PM +0200
+# Last Change: Tue Jun 22, 2021 at 07:51 PM +0200
 # Based on the script 'regmva.py' shared by Patrick Owen
 
 import pickle
@@ -135,5 +135,6 @@ if __name__ == '__main__':
 
         output_br_names.push_back('d0_et_diff_pred')
         output_br_names.push_back('et_pred_real_diff')
+        output_br_names.push_back('d0_et_emu_no_bdt')
 
         final_df.Snapshot(args.tree, args.debug_ntuple, output_br_names)
