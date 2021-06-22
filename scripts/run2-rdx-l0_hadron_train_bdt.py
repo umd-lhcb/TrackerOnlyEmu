@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Author: Yipeng Sun
-# Last Change: Tue Jun 22, 2021 at 08:21 PM +0200
+# Last Change: Wed Jun 23, 2021 at 12:04 AM +0200
 # Based on the script 'regmva.py' shared by Patrick Owen
 
 import pickle
@@ -30,15 +30,15 @@ from TrackerOnlyEmu.executor import process_directives
 BDT_TRAIN_BRANCHES = [
     'd0_PT',
     'd0_P',
-    'k_L0Calo_HCAL_realET',  # NOTE: realET is tracker ET!
+    'k_L0Calo_HCAL_realET',  # NOTE: realET is not Trigger ET!
     'pi_L0Calo_HCAL_realET',
     'rdiff_k_pi'
 ]
 
 REGRESSION_BRANCHES = [
-    EXEC('Define', 'd0_et_trg',
+    EXEC('Define', 'd0_trg_et',
          'capHcalResp(k_L0Calo_HCAL_TriggerET, pi_L0Calo_HCAL_TriggerET)', True),
-    EXEC('Define', 'd0_et_diff', 'd0_et_trg - d0_et_emu_no_bdt', True),
+    EXEC('Define', 'd0_et_diff', 'd0_trg_et - d0_et_emu_no_bdt', True),
 ]
 
 
