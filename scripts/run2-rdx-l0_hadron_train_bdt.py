@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Author: Yipeng Sun
-# Last Change: Tue May 25, 2021 at 07:39 PM +0200
+# Last Change: Tue Jun 22, 2021 at 06:37 PM +0200
 # Based on the script 'regmva.py' shared by Patrick Owen
 
 import pickle
@@ -124,6 +124,10 @@ if __name__ == '__main__':
 
         d0_et_diff_pred = bdt.predict(bdt_input_vars)
         debug_output['d0_et_diff_pred'] = d0_et_diff_pred
+
+        # Delete the d0_L0HadronDecision_TOS branch as we can't convert from a
+        # numpy bool array to a TTree one directly.
+        del(debug_output['d0_L0HadronDecision_TOS'])
 
         debug_rdf = ROOT.RDF.MakeNumpyDataFrame(debug_output)
         final_df = debug_rdf.Define(
