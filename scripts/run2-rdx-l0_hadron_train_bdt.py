@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Author: Yipeng Sun
-# Last Change: Wed Jun 23, 2021 at 12:04 AM +0200
+# Last Change: Wed Jun 30, 2021 at 10:05 PM +0200
 # Based on the script 'regmva.py' shared by Patrick Owen
 
 import pickle
@@ -131,7 +131,7 @@ if __name__ == '__main__':
 
         debug_rdf = ROOT.RDF.MakeNumpyDataFrame(debug_output)
         final_df = debug_rdf.Define(
-            'et_pred_real_diff', 'd0_et_diff_pred - d0_et_diff')
+            'd0_et_trg_pred_diff', 'd0_et_diff - d0_et_diff_pred')
 
         output_br_names.push_back('d0_et_diff_pred')
         output_br_names.push_back('et_pred_real_diff')
