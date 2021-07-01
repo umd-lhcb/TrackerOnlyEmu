@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Author: Yipeng Sun
-# Last Change: Wed Jun 30, 2021 at 10:05 PM +0200
+# Last Change: Thu Jul 01, 2021 at 03:30 AM +0200
 # Based on the script 'regmva.py' shared by Patrick Owen
 
 import pickle
@@ -73,6 +73,12 @@ specify debug ntuple output location.
     parser.add_argument('--load-bdt', default=None, help='''
 optionally specify serialized BDT to load.''')
 
+    parser.add_argument('--max-depth', default=4, type=int, help='''
+optionally specify the max_depth parameter for the BDT.''')
+
+    parser.add_argument('--no-bdt-export', action='store_true', help='''
+optionally don't export trained BDT with pickle.''')
+
     return parser.parse_args()
 
 
@@ -107,12 +113,14 @@ if __name__ == '__main__':
     if not args.load_bdt:
         print('Start training for a regression BDT...')
         rng = np.random.RandomState(1)
-        bdt = AdaBoostRegressor(DecisionTreeRegressor(max_depth=4),
+        bdt = AdaBoostRegressor(DecisionTreeRegressor(max_depth=args.max_depth),
                                 n_estimators=300, random_state=rng)
         bdt.fit(bdt_input_vars_train, regression_var_train)
         print('BDT fitted.')
 
-        pickle.dump(bdt, open(args.output, 'wb'))
+        if not args.no_bdt_export:
+            print('Export trained BDT...')
+            pickle.dump(bdt, open(args.output, 'wb'))
 
     else:
         print('Load already serialized BDT...')
@@ -134,7 +142,7 @@ if __name__ == '__main__':
             'd0_et_trg_pred_diff', 'd0_et_diff - d0_et_diff_pred')
 
         output_br_names.push_back('d0_et_diff_pred')
-        output_br_names.push_back('et_pred_real_diff')
+        output_br_names.push_back('d0_et_trg_pred_diff')
         output_br_names.push_back('d0_et_emu_no_bdt')
 
         final_df.Snapshot(args.tree, args.debug_ntuple, output_br_names)
