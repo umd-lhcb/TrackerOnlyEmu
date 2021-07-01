@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 #
 # Author: Yipeng Sun
-# Last Change: Thu Jul 01, 2021 at 03:30 AM +0200
+# Last Change: Thu Jul 01, 2021 at 03:36 AM +0200
 # Based on the script 'regmva.py' shared by Patrick Owen
 
 import pickle
+import time
 import numpy as np
 
 import ROOT
@@ -112,11 +113,14 @@ if __name__ == '__main__':
 
     if not args.load_bdt:
         print('Start training for a regression BDT...')
+        time_start = time.perf_counter()
         rng = np.random.RandomState(1)
         bdt = AdaBoostRegressor(DecisionTreeRegressor(max_depth=args.max_depth),
                                 n_estimators=300, random_state=rng)
         bdt.fit(bdt_input_vars_train, regression_var_train)
-        print('BDT fitted.')
+        time_stop = time.perf_counter()
+        print('BDT fitted. It takes a total of {:,.2f} sec'.format(
+            time_stop - time_start))
 
         if not args.no_bdt_export:
             print('Export trained BDT...')
