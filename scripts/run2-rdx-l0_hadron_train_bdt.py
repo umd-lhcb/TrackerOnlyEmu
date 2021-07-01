@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Author: Yipeng Sun
-# Last Change: Thu Jul 01, 2021 at 03:36 AM +0200
+# Last Change: Thu Jul 01, 2021 at 03:06 PM +0200
 # Based on the script 'regmva.py' shared by Patrick Owen
 
 import pickle
@@ -52,33 +52,22 @@ def parse_input():
         description='Train a regression BDT for a better emulation of L0Hadron trigger.')
 
     parser.add_argument('input', help='''
-specify input ntuple file.
-''')
+specify input ntuple file.''')
 
     parser.add_argument('output', help='''
-specify output pickle dump.
-''')
+specify output pickle dump.''')
 
     parser.add_argument('-t', '--tree', default='TupleB0/DecayTree', help='''
-specify tree name.
-''')
+specify tree name.''')
 
-    parser.add_argument('--debug', action='store_true', help='''
-enable debug mode.
-''')
-
-    parser.add_argument('--debug-ntuple', default='debug.root', help='''
-specify debug ntuple output location.
-''')
+    parser.add_argument('--debug-ntuple', default=None, help='''
+specify debug ntuple output location.''')
 
     parser.add_argument('--load-bdt', default=None, help='''
 optionally specify serialized BDT to load.''')
 
     parser.add_argument('--max-depth', default=4, type=int, help='''
 optionally specify the max_depth parameter for the BDT.''')
-
-    parser.add_argument('--no-bdt-export', action='store_true', help='''
-optionally don't export trained BDT with pickle.''')
 
     return parser.parse_args()
 
@@ -122,7 +111,7 @@ if __name__ == '__main__':
         print('BDT fitted. It takes a total of {:,.2f} sec'.format(
             time_stop - time_start))
 
-        if not args.no_bdt_export:
+        if args.output != 'None':
             print('Export trained BDT...')
             pickle.dump(bdt, open(args.output, 'wb'))
 
@@ -130,7 +119,7 @@ if __name__ == '__main__':
         print('Load already serialized BDT...')
         bdt = pickle.load(open(args.load_bdt, 'rb'))
 
-    if args.debug:
+    if args.debug_ntuple is not None:
         print('Generate debug ntuple...')
         debug_output = dfs[-1].AsNumpy()
 
