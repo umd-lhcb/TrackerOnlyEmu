@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Author: Yipeng Sun
-# Last Change: Thu Jul 08, 2021 at 08:36 PM +0200
+# Last Change: Thu Jul 08, 2021 at 08:47 PM +0200
 # Based on the script 'regmva.py' shared by Patrick Owen
 
 import pickle
@@ -120,7 +120,8 @@ if __name__ == '__main__':
 
         if args.output != 'None':
             print('Export trained BDT...')
-            pickle.dump(bdt, open(args.output, 'wb'))
+            with open(args.output, 'wb') as f:
+                pickle.dump(bdt, f)
 
     else:
         print('Load already serialized BDT...')
@@ -129,9 +130,7 @@ if __name__ == '__main__':
     if args.debug_ntuple is not None:
         print('Generate debug ntuple...')
         debug_output = dfs[-1].AsNumpy()
-
-        d0_et_diff_pred = bdt.predict(bdt_input_vars)
-        debug_output['d0_et_diff_pred'] = d0_et_diff_pred
+        debug_output['d0_et_diff_pred'] = bdt.predict(bdt_input_vars)
 
         # Delete the d0_L0HadronDecision_TOS branch as we can't convert from a
         # numpy bool array to a TTree one directly.
