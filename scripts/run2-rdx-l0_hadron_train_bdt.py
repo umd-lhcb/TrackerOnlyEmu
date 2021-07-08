@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Author: Yipeng Sun
-# Last Change: Thu Jul 01, 2021 at 03:06 PM +0200
+# Last Change: Thu Jul 08, 2021 at 08:36 PM +0200
 # Based on the script 'regmva.py' shared by Patrick Owen
 
 import pickle
@@ -69,6 +69,9 @@ optionally specify serialized BDT to load.''')
     parser.add_argument('--max-depth', default=4, type=int, help='''
 optionally specify the max_depth parameter for the BDT.''')
 
+    parser.add_argument('--test-ntuple', default=None, help='''
+specify test ntuple output location.''')
+
     return parser.parse_args()
 
 
@@ -90,6 +93,8 @@ if __name__ == '__main__':
 
     bdt_input_vars = np.array(
         list(init_frame.AsNumpy(columns=BDT_TRAIN_BRANCHES).values())).T
+    idx_vars = np.array(
+        list(init_frame.AsNumpy(columns=['runNumber', 'eventNumber']))).T
 
     dfs, output_br_names = process_directives(REGRESSION_BRANCHES, init_frame)
     regression_var = dfs[-1].AsNumpy(columns=['d0_et_diff'])
@@ -97,8 +102,10 @@ if __name__ == '__main__':
     bdt_input_vars_dev, _, regression_var_dev, _ = train_test_split(
         bdt_input_vars, regression_var['d0_et_diff'],
         test_size=0.2, random_state=42)
-    bdt_input_vars_train, _, regression_var_train, _ = train_test_split(
-        bdt_input_vars_dev, regression_var_dev, test_size=0.2, random_state=492)
+    bdt_input_vars_train, bdt_input_vars_test, \
+        regression_var_train, regression_var_test = train_test_split(
+            bdt_input_vars_dev, regression_var_dev, test_size=0.2,
+            random_state=492)
 
     if not args.load_bdt:
         print('Start training for a regression BDT...')
@@ -139,3 +146,12 @@ if __name__ == '__main__':
         output_br_names.push_back('d0_et_emu_no_bdt')
 
         final_df.Snapshot(args.tree, args.debug_ntuple, output_br_names)
+
+    if args.test_ntuple is not None:
+        print('Generate test ntuple...')
+        test_output = dict(zip(BDT_TRAIN_BRANCHES, bdt_input_vars_test.T))
+        test_output['d0_et_diff'] = regression_var_test
+        test_output['d0_et_diff_pred'] = bdt.predict(bdt_input_vars_test)
+
+        test_rdf = ROOT.RDF.MakeNumpyDataFrame(test_output)
+        test_rdf.Snapshot(args.tree, args.test_ntuple)
