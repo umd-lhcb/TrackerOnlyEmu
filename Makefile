@@ -1,5 +1,5 @@
 # Author: Yipeng Sun
-# Last Change: Thu Jul 01, 2021 at 03:08 PM +0200
+# Last Change: Sat Jul 10, 2021 at 01:57 AM +0200
 
 .PHONY: sdist clean install install-egg
 
@@ -24,7 +24,9 @@ test-all: test-hlt1 test-l0-hadron test-l0-global-tis
 train-l0-hadron-bdt:
 	@mkdir -p gen
 	run2-rdx-l0_hadron_train_bdt.py ./samples/rdx-bdt_train_sample.root ./gen/bdt.pickle \
-		--debug-ntuple ./gen/debug_bdt.root
+		--max-depth 4 \
+		--debug-ntuple ./gen/debug_bdt.root \
+		--test-ntuple ./gen/test_bdt.root
 
 test-hlt1:
 	@mkdir -p gen
