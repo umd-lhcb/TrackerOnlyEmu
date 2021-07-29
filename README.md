@@ -18,6 +18,48 @@ make test-all
 Note that you should have Python 3.8+ and ROOT 6.22+ installed.
 
 
+## Develop this project
+
+This project uses a wrapper to `RDataFrame` to make definition of process
+sequence easier. It also tries to separate C++ code from Python code by
+defining C++ functions in separate headers then load them in Python.
+
+The directory structures of this project is:
+
+```shell
+.
+├── davinci         # add-on to DaVinci to produce required branches
+├── gen
+├── nix             # nix overlay, currently unused
+├── samples         # sample input ntuples
+├── scripts         # actual emulation scripts
+└── TrackerOnlyEmu  # some Python file
+    └── triggers
+        ├── hlt1    # HLT1 emulation C++ code
+        └── l0      # L0 emulation C++ code, input ntuples (e.g. HCAL response), and exported BDT
+```
+
+For the Python module:
+
+- The `RDataFrame` wrapper (which is very thin) is defined in [`TrackerOnlyEmu/executor.py`](./TrackerOnlyEmu/executor.py).
+
+- A generic file loader is defined in [`TrackerOnlyEmu/loader.py`](./TrackerOnlyEmu/loader.py)
+    - This is needed because we also INSTALL C++ code, input ntuples and
+      exported BDT together with the Python package, so we need to be able to
+      load them without knowing their relative location to the emulation scripts.
+    - The C++ files are typically loaded with:
+
+        ```python
+        load_cpp('<triggers/l0/run2-L0Hadron.h>')
+        ```
+
+    - If you want to load a file relative to your current script, just drop the `<>`:
+
+        ```python
+        load_cpp('../TrackerOnlyEmu/triggers/l0/run2-L0Hadron.h')
+        ```
+
+
 ## Add HLT1 info extraction tool to DaVinci
 
 We've tested the code work with `DaVinci/v45r6`. The instructions are adapted from the

@@ -5,6 +5,8 @@ build
 dist
 gen
 
+.lvimrc
+.virtualenv
+
 *.pyc
 *.root
-.lvimrc
