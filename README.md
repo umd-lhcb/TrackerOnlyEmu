@@ -29,11 +29,11 @@ The directory structures of this project is:
 ```shell
 .
 ├── davinci         # add-on to DaVinci to produce required branches
-├── gen
+├── gen             # non-saved outputs of scripts
 ├── nix             # nix overlay, currently unused
 ├── samples         # sample input ntuples
 ├── scripts         # actual emulation scripts
-└── TrackerOnlyEmu  # some Python file
+└── TrackerOnlyEmu  # some Python files
     └── triggers
         ├── hlt1    # HLT1 emulation C++ code
         └── l0      # L0 emulation C++ code, input ntuples (e.g. HCAL response), and exported BDT
@@ -88,8 +88,8 @@ After that, add `TupleToolL0Calo` to your `DaVinci` script.
 
 ## Comment on the `RelatedInfoTools`
 
-It extract all stable daughter particles starting from top reconstructed
-particle. It traverse the whole decay tree from the mother and if a daughter
+It extracts all stable daughter particles starting from top reconstructed
+particle. It traverses the whole decay tree from the mother and if a daughter
 is not stable, it will skip that daughter and keep recursing.
 
 
