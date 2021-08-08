@@ -2,6 +2,7 @@
 , buildPythonPackage
 , numpy
 , scikit-learn
+, xgboost
 , root
 }:
 
@@ -17,6 +18,7 @@ buildPythonPackage rec {
     numpy
     scikit-learn
     root
+    xgboost
   ];
 
   doCheck = false;

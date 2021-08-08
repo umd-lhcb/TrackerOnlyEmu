@@ -56,7 +56,8 @@ setup(
     include_package_data=True,
     install_requires=[
         'numpy',
-        'scikit-learn'
+        'scikit-learn',
+        'xgboost'
     ],
     classifiers=[
         'Programming Language :: Python :: 3',

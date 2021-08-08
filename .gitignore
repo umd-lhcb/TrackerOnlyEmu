@@ -6,6 +6,14 @@ build
 dist
 gen
 
+studies/**/*.root
+studies/**/*.tex
+studies/**/*.md
+studies/**/*.yml
+studies/**/*.png
+studies/**/*.pdf
+studies/**/*.pickle
+
 .lvimrc
 .virtualenv
 
