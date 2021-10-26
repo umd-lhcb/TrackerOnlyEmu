@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Author: Yipeng Sun
-# Last Change: Tue Oct 26, 2021 at 02:57 PM +0200
+# Last Change: Tue Oct 26, 2021 at 04:02 PM +0200
 # Stolen from: https://gitlab.cern.ch/lhcb-slb/B02DplusTauNu/-/blob/master/tuple_processing_chain/emulate_L0GlobalTIS.py
 
 import ROOT
@@ -80,8 +80,8 @@ if __name__ == '__main__':
     if args.debug:
         directives += directives_debug
         # Apply the nSPDHits cut
-        directives.append(
-            EXEC('Filter', instruct='NumSPDHits < 450'))
+        # directives.append(
+        #     EXEC('Filter', instruct='NumSPDHits < 450'))
         directives.append(
             EXEC('Define', 'nspd_hits', 'NumSPDHits', True))
 

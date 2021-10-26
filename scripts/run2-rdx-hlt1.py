@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Author: Yipeng Sun
-# Last Change: Tue Oct 26, 2021 at 02:56 PM +0200
+# Last Change: Tue Oct 26, 2021 at 04:02 PM +0200
 
 import ROOT
 ROOT.PyConfig.IgnoreCommandLineOptions = True  # Don't hijack argparse!
@@ -149,8 +149,8 @@ if __name__ == '__main__':
         directives += directives_debug
         directives += directives_mva
         # Apply the nSPDHits cut
-        directives.append(
-            EXEC('Filter', instruct='NumSPDHits < 450'))
+        # directives.append(
+        #     EXEC('Filter', instruct='NumSPDHits < 450'))
         directives.append(
             EXEC('Define', 'nspd_hits', 'NumSPDHits', True))
 
