@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Author: Yipeng Sun
-# Last Change: Tue Oct 26, 2021 at 02:51 PM +0200
+# Last Change: Tue Oct 26, 2021 at 02:56 PM +0200
 
 import ROOT
 ROOT.PyConfig.IgnoreCommandLineOptions = True  # Don't hijack argparse!
@@ -12,12 +12,9 @@ from itertools import combinations
 
 from ROOT import RDataFrame
 
-from TrackerOnlyEmu.loader import load_cpp
 from TrackerOnlyEmu.executor import ExecDirective as EXEC
 from TrackerOnlyEmu.executor import process_directives
-from TrackerOnlyEmu.emulation.run2_rdx import (
-    run2_rdx_hlt1_directive_gen
-)
+from TrackerOnlyEmu.emulation.run2_rdx import run2_rdx_hlt1_directive_gen
 
 
 #################################

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Author: Yipeng Sun
-# Last Change: Wed May 19, 2021 at 12:27 AM +0200
+# Last Change: Tue Oct 26, 2021 at 02:57 PM +0200
 # Stolen from: https://gitlab.cern.ch/lhcb-slb/B02DplusTauNu/-/blob/master/tuple_processing_chain/emulate_L0GlobalTIS.py
 
 import ROOT
@@ -10,11 +10,12 @@ ROOT.PyConfig.DisableRootLogon = True  # Don't read .rootlogon.py
 
 from argparse import ArgumentParser
 
-from ROOT import gInterpreter, RDataFrame
+from ROOT import RDataFrame
 
-from TrackerOnlyEmu.loader import load_file, load_cpp
 from TrackerOnlyEmu.executor import ExecDirective as EXEC
 from TrackerOnlyEmu.executor import process_directives
+from TrackerOnlyEmu.emulation.run2_rdx import \
+    run2_rdx_l0_global_tis_directive_gen
 
 
 #################################
@@ -50,21 +51,6 @@ enable debug mode.
     return parser.parse_args()
 
 
-##########################################
-# Load C++ definitions & ROOT histograms #
-##########################################
-
-load_cpp('<triggers/l0/run2-L0GlobalTIS.h>')
-
-gInterpreter.Declare('auto histoResp = new TFile("{}");'.format(
-    load_file('<triggers/l0/l0_tis_efficiency.root>')))
-
-epilogue = '''
-auto hResp = readL0GlobalTisResp(histoResp);
-'''
-gInterpreter.Declare(epilogue)
-
-
 #################
 # Apply trigger #
 #################
@@ -72,17 +58,7 @@ gInterpreter.Declare(epilogue)
 if __name__ == '__main__':
     args = parse_input()
 
-    directives = [
-        EXEC('Define', '{}_pz'.format(args.Bmeson),
-             '{}_PZ'.format(args.Bmeson), True),
-        EXEC('Define', '{}_pt'.format(args.Bmeson),
-             '{}_PT'.format(args.Bmeson), True),
-        EXEC('Define', '{}_l0_global_tis_emu'.format(args.Bmeson),
-             'l0GlobalTisTriggerEmu({}, {}, {}, hResp)'.format(
-                 '{}_pz'.format(args.Bmeson),
-                 '{}_pt'.format(args.Bmeson),
-                 args.year), True),
-    ]
+    directives = run2_rdx_l0_global_tis_directive_gen(args.Bmeson, args.year)
 
     directives_debug = [
         # Reference variables

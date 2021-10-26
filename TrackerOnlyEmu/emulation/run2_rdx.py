@@ -2,12 +2,43 @@
 #
 # Author: Yipeng Sun
 # License: BSD 2-clause
-# Last Change: Tue Oct 26, 2021 at 02:51 PM +0200
+# Last Change: Tue Oct 26, 2021 at 02:55 PM +0200
 
 from itertools import combinations
+from ROOT import gInterpreter
 
 from TrackerOnlyEmu.loader import load_file, load_cpp
 from TrackerOnlyEmu.executor import ExecDirective as EXEC
+
+
+#################
+# L0 Global TIS #
+#################
+# Main #########################################################################
+
+def run2_rdx_l0_global_tis_directive_gen(Bmeson, year):
+    load_cpp('<triggers/l0/run2-L0GlobalTIS.h>')
+
+    gInterpreter.Declare('auto histoResp = new TFile("{}");'.format(
+        load_file('<triggers/l0/l0_tis_efficiency.root>')))
+
+    epilogue = '''
+    auto hResp = readL0GlobalTisResp(histoResp);
+    '''
+    gInterpreter.Declare(epilogue)
+
+    return [
+        EXEC('Define', '{}_pz'.format(Bmeson),
+             '{}_PZ'.format(Bmeson), True),
+        EXEC('Define', '{}_pt'.format(Bmeson),
+             '{}_PT'.format(Bmeson), True),
+        EXEC('Define', '{}_l0_global_tis_emu'.format(Bmeson),
+             'l0GlobalTisTriggerEmu({}, {}, {}, hResp)'.format(
+                 '{}_pz'.format(Bmeson),
+                 '{}_pt'.format(Bmeson),
+                 year), True),
+    ]
+
 
 #########
 # HLT 1 #
