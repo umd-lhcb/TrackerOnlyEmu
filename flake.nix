@@ -37,6 +37,9 @@
 
             # Python requirements (enough to get a virtualenv going).
             virtualenvwrapper
+
+            # Pinned Python dependencies
+            numpy
           ];
 
           shellHook = ''
