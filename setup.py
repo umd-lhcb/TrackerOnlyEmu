@@ -1,5 +1,5 @@
 # Author: Yipeng Sun
-# Last Change: Sat Apr 10, 2021 at 06:37 PM +0200
+# Last Change: Tue Oct 26, 2021 at 02:44 PM +0200
 
 import setuptools
 import subprocess
@@ -35,8 +35,8 @@ def get_version(rel_path):
         if line.startswith('__version__'):
             delim = '"' if '"' in line else "'"
             return line.split(delim)[1]
-    else:
-        raise RuntimeError("Unable to find version string.")
+
+    raise RuntimeError("Unable to find version string.")
 
 
 #########
