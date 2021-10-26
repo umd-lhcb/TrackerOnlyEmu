@@ -39,8 +39,9 @@ ntpNtmTrain = checkFile('l0hadron_emu_ntm_train.root')
 ntpNtmValid = checkFile('l0hadron_emu_ntm_valid.root')
 
 ## Training and loading the XGBoost classifier
-trainLoad(ntpTmTrain, [ntpTmValid,ntpNtm], 'd0', 4, 300)
+trainLoad(ntpAllTrain, [ntpAllValid], 'd0', 4, 300) ### Standard configuration
+
+# trainLoad(ntpTmTrain, [ntpTmValid,ntpNtm], 'd0', 4, 300)
 # trainLoad(ntpNtmTrain, [ntpNtmValid,ntpTm], 'd0', 4, 300)
-# trainLoad(ntpAllTrain, [ntpAllValid], 'd0', 4, 300)
 # trainLoad(ntpAllTrain, [ntpAllValid], 'k', 4, 300)
 # trainLoad(ntpAllTrain, [ntpAllValid], 'k', 6, 500)
