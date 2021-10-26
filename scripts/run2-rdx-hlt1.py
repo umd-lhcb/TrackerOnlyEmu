@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Author: Yipeng Sun
-# Last Change: Tue Oct 26, 2021 at 04:02 PM +0200
+# Last Change: Tue Oct 26, 2021 at 04:27 PM +0200
 
 import ROOT
 ROOT.PyConfig.IgnoreCommandLineOptions = True  # Don't hijack argparse!
@@ -158,8 +158,8 @@ if __name__ == '__main__':
     dfs, output_br_names = process_directives(directives, init_frame)
 
     # Always keep run and event numbers
-    output_br_names.push_back('runNumber')
-    output_br_names.push_back('eventNumber')
+    output_br_names.append('runNumber')
+    output_br_names.append('eventNumber')
 
     # Output
     dfs[-1].Snapshot(args.tree, args.output, output_br_names)

@@ -2,7 +2,7 @@
 #
 # Author: Yipeng Sun
 # License: BSD 2-clause
-# Last Change: Fri Apr 30, 2021 at 03:00 PM +0200
+# Last Change: Tue Oct 26, 2021 at 04:24 PM +0200
 
 from dataclasses import dataclass
 from ROOT import RDataFrame
@@ -20,26 +20,25 @@ class ExecDirective:
 def process_single_directive(attr, branch, instruct):
     if branch is not None:
         return attr(branch, instruct)
-    else:
-        return attr(instruct)
+    return attr(instruct)
 
 
 def process_directives(directives, init_frame):
     frames = []
-    branches = vector('string')()
+    branches = []
 
-    for dir in directives:
+    for d in directives:
         if not frames:
             prev_frame = init_frame
         else:
             prev_frame = frames[-1]
 
-        cur_frame = process_single_directive(getattr(prev_frame, dir.op),
-                                             dir.branch, dir.instruct)
+        cur_frame = process_single_directive(
+            getattr(prev_frame, d.op), d.branch, d.instruct)
         frames.append(cur_frame)
 
-        if dir.keep:
-            branches.push_back(dir.branch)
+        if d.keep:
+            branches.append(d.branch)
 
     return frames, branches
 
