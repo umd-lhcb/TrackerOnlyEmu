@@ -2,7 +2,7 @@
 #
 # Author: Yipeng Sun
 # License: BSD 2-clause
-# Last Change: Wed Oct 27, 2021 at 02:56 AM +0200
+# Last Change: Wed Oct 27, 2021 at 03:44 AM +0200
 
 from itertools import combinations
 from ROOT import gInterpreter
@@ -59,7 +59,7 @@ def run2_rdx_l0_hadron_tos_no_bdt_directive_gen(year):
         EXEC('Define', 'd0_et_emu_no_bdt',
              'TMath::Max(k_et_emu_no_bdt, pi_et_emu_no_bdt)', True),
         EXEC('Define', 'd0_l0_hadron_tos_emu_no_bdt',
-             'static_cast<Int_t>(l0HadronTriggerEmu(d0_et_emu_no_bdt, {}))'.format(year),
+             'static_cast<Double_t>(l0HadronTriggerEmu(d0_et_emu_no_bdt, {}))'.format(year),
              True),
         EXEC('Define', 'd0_trg_et',
              'capHcalResp(k_L0Calo_HCAL_TriggerET, pi_L0Calo_HCAL_TriggerET)',
