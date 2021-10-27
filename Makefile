@@ -1,5 +1,5 @@
 # Author: Yipeng Sun
-# Last Change: Wed Oct 27, 2021 at 03:13 AM +0200
+# Last Change: Wed Oct 27, 2021 at 03:29 AM +0200
 
 .PHONY: sdist clean install install-egg
 
@@ -24,7 +24,7 @@ test-all: test-hlt1 test-l0-global-tis
 # RD+'s approach, no longer the nominal
 test-l0-hadron-bdt:
 	scripts/run2-rdx-l0_hadron_trainload_bdt.py ./samples/run2_rdx-train.root ./gen/emu_l0_hadron_bdt.root \
-		--max-depth 4 \
+		--max-depth 4 --debug \
 		--dump-bdt ./gen/bdt.pickle
 
 test-hlt1:

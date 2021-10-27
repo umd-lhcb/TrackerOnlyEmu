@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Author: Yipeng Sun
-# Last Change: Wed Oct 27, 2021 at 03:13 AM +0200
+# Last Change: Wed Oct 27, 2021 at 03:31 AM +0200
 # Based on the script 'regmva.py' shared by Patrick Owen
 
 import pickle
@@ -42,6 +42,7 @@ ADD_BRANCHES = [
     'runNumber',
     'eventNumber',
     'd0_et_diff',
+    'd0_et_emu_no_bdt',
 ]
 
 ADD_BRANCHES_DEBUG = [
@@ -53,7 +54,6 @@ ADD_BRANCHES_DEBUG = [
     'k_p',
     'pi_p',
     'd0_p',
-    'd0_et_emu_no_bdt',
 ]
 
 
@@ -141,10 +141,8 @@ if __name__ == '__main__':
         # Cut variable candidates
         EXEC('Define', 'k_real_et', 'k_L0Calo_HCAL_realET', True),
         EXEC('Define', 'k_trg_et', 'k_L0Calo_HCAL_TriggerET', True),
-        EXEC('Define', 'k_trg_hcal_et', 'k_L0Calo_HCAL_TriggerHCALET', True),
         EXEC('Define', 'pi_real_et', 'pi_L0Calo_HCAL_realET', True),
         EXEC('Define', 'pi_trg_et', 'pi_L0Calo_HCAL_TriggerET', True),
-        EXEC('Define', 'pi_trg_hcal_et', 'pi_L0Calo_HCAL_TriggerHCALET', True),
     ]
 
     if args.debug:
@@ -152,7 +150,7 @@ if __name__ == '__main__':
         ADD_BRANCHES += ADD_BRANCHES_DEBUG
 
     init_frame = RDataFrame(args.tree, args.input)
-    dfs, output_br_names = process_directives(directives, init_frame)
+    dfs, _ = process_directives(directives, init_frame)
 
     input_vars = np.array(
         list(dfs[-1].AsNumpy(
@@ -181,12 +179,19 @@ if __name__ == '__main__':
 
     # Output the ntuple
     print('Generate output ntuple...')
-    debug_output = gen_output_dict(input_vars, BDT_TRAIN_BRANCHES+ADD_BRANCHES)
-    debug_output['d0_et_diff'] = regression_var
-    debug_output['d0_et_diff_pred'] = bdt.predict(slice_bdt_input(input_vars))
+    output = gen_output_dict(input_vars, BDT_TRAIN_BRANCHES+ADD_BRANCHES)
+    output['d0_et_diff_pred'] = bdt.predict(slice_bdt_input(input_vars))
+    output_df = ROOT.RDF.MakeNumpyDataFrame(output)
 
-    debug_rdf = ROOT.RDF.MakeNumpyDataFrame(debug_output)
-    final_debug_df = debug_rdf.Define(
-        'd0_et_trg_pred_diff', 'd0_et_diff - d0_et_diff_pred')
+    directives_output = [
+        EXEC('Define', 'd0_et_emu', 'capHcalResp(d0_et_emu_no_bdt + d0_et_diff_pred)',
+             True),
+        EXEC('Define', 'd0_et_trg_pred_diff', 'd0_et_diff - d0_et_diff_pred',
+             True),
+        EXEC('Define', 'd0_l0_hadron_tos_emu_bdt',
+             'static_cast<Int_t>(l0HadronTriggerEmu(d0_et_emu, {}))'.format(args.year),
+             True),
+    ]
 
-    final_debug_df.Snapshot(args.tree, args.output)
+    out_dfs, _ = process_directives(directives_output, output_df)
+    out_dfs[-1].Snapshot(args.tree, args.output)
