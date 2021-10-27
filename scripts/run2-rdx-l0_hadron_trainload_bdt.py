@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Author: Yipeng Sun
-# Last Change: Wed Oct 27, 2021 at 03:31 AM +0200
+# Last Change: Wed Oct 27, 2021 at 03:44 AM +0200
 # Based on the script 'regmva.py' shared by Patrick Owen
 
 import pickle
@@ -189,7 +189,7 @@ if __name__ == '__main__':
         EXEC('Define', 'd0_et_trg_pred_diff', 'd0_et_diff - d0_et_diff_pred',
              True),
         EXEC('Define', 'd0_l0_hadron_tos_emu_bdt',
-             'static_cast<Int_t>(l0HadronTriggerEmu(d0_et_emu, {}))'.format(args.year),
+             'static_cast<Double_t>(l0HadronTriggerEmu(d0_et_emu, {}))'.format(args.year),
              True),
     ]
 
