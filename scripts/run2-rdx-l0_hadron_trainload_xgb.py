@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Authors: Yipeng Sun, Manuel Franco Sevilla
-# Last Change: Thu Oct 28, 2021 at 04:40 AM +0200
+# Last Change: Thu Oct 28, 2021 at 04:49 AM +0200
 
 import pickle
 import numpy as np
@@ -154,13 +154,14 @@ if __name__ == '__main__':
             with open(args.dump, 'wb') as f:
                 pickle.dump(xgb, f)
     else:
-        print('Load already serialized BDT...')
+        print('Load already serialized XGBoost classifier...')
         xgb = pickle.load(open(load_file(args.load), 'rb'))
 
     # Output the ntuple
     print('Generate output ntuple...')
     output = gen_output_dict(input_vars, XGB_TRAIN_BRANCHES+ADD_BRANCHES)
-    output['d0_l0_hadron_tos_emu_xgb'] = xgb.predict(input_vars)
+    output['d0_l0_hadron_tos_emu_xgb'] = xgb.predict(
+        slice_xgb_input(input_vars))
     output_df = ROOT.RDF.MakeNumpyDataFrame(output)
 
     output_df.Snapshot(args.tree, args.output)
