@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Author: Yipeng Sun
-# Last Change: Thu Oct 28, 2021 at 04:12 AM +0200
+# Last Change: Thu Oct 28, 2021 at 04:27 AM +0200
 # Based on the script 'regmva.py' shared by Patrick Owen
 
 import pickle
@@ -75,16 +75,17 @@ specify year.''')
 enable debug mode.
 ''')
 
-    parser.add_argument('--load-bdt', default=None, help='''
+    parser.add_argument('--load', default=None, help='''
 optionally specify serialized BDT to load.''')
 
-    parser.add_argument('--dump-bdt', default=None, help='''
+    parser.add_argument('--dump', default=None, help='''
 optionally specify output to pickled BDT object.''')
 
     parser.add_argument('--max-depth', default=4, type=int, help='''
 optionally specify the max_depth parameter for the BDT.''')
 
     return parser.parse_args()
+
 
 ###########
 # Helpers #
@@ -138,7 +139,7 @@ if __name__ == '__main__':
             columns=BDT_TRAIN_BRANCHES+ADD_BRANCHES).values())).T
     regression_var = dfs[-1].AsNumpy(columns=['d0_et_diff'])['d0_et_diff']
 
-    if not args.load_bdt:
+    if not args.load:
         print('Start training for a regression BDT...')
         rng = np.random.RandomState(1)
         bdt = AdaBoostRegressor(DecisionTreeRegressor(max_depth=args.max_depth),
@@ -149,14 +150,14 @@ if __name__ == '__main__':
             bdt.fit(bdt_input, regression_var)
         print('BDT fitted. It takes a total of {:,.2f} sec'.format(t()))
 
-        if args.dump_bdt:
-            print('Export trained BDT to {}...'.format(args.dump_bdt))
-            with open(args.dump_bdt, 'wb') as f:
+        if args.dump:
+            print('Export trained BDT to {}...'.format(args.dump))
+            with open(args.dump, 'wb') as f:
                 pickle.dump(bdt, f)
 
     else:
         print('Load already serialized BDT...')
-        bdt = pickle.load(open(args.load_bdt, 'rb'))
+        bdt = pickle.load(open(args.load, 'rb'))
 
     # Output the ntuple
     print('Generate output ntuple...')

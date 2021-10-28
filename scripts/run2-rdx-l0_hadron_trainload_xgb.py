@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Authors: Yipeng Sun, Manuel Franco Sevilla
-# Last Change: Thu Oct 28, 2021 at 04:11 AM +0200
+# Last Change: Thu Oct 28, 2021 at 04:26 AM +0200
 
 import pickle
 import numpy as np
@@ -69,10 +69,10 @@ do no print output.''')
 enable debug mode.
 ''')
 
-    parser.add_argument('--load-xgb', default=None, help='''
+    parser.add_argument('--load', default=None, help='''
 optionally specify XGB to load.''')
 
-    parser.add_argument('--dump-xgb', default=None, help='''
+    parser.add_argument('--dump', default=None, help='''
 optionally specify output to pickled XGB object.''')
 
     parser.add_argument('--max-depth', default=4, type=int, help='''
@@ -135,7 +135,7 @@ if __name__ == '__main__':
     regression_var = dfs[-1].AsNumpy(
         columns=[parti+'_L0HadronDecision_TOS'])[parti+'_L0HadronDecision_TOS']
 
-    if not args.load_xgb:
+    if not args.load:
         # Python 3.6+: f-string
         print(f'Start training a classification XGBoost with {args.ntrees} trees and max-depth {args.max_depth}.')
 
@@ -148,13 +148,13 @@ if __name__ == '__main__':
             xgb.fit(xgb_input, regression_var)
         print('XGB fit took a total of {:,.2f} sec'.format(t()))
 
-        if args.dump_xgb:
-            print('Export trained XGBoost to {}...'.format(args.dump_xgb))
-            with open(args.dump_xgb, 'wb') as f:
+        if args.dump:
+            print('Export trained XGBoost to {}...'.format(args.dump))
+            with open(args.dump, 'wb') as f:
                 pickle.dump(xgb, f)
     else:
         print('Load already serialized BDT...')
-        xgb = pickle.load(open(load_file(args.load_xgb), 'rb'))
+        xgb = pickle.load(open(load_file(args.load), 'rb'))
 
     # Output the ntuple
     print('Generate output ntuple...')
