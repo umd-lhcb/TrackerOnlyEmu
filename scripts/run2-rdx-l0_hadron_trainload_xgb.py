@@ -3,6 +3,7 @@
 # Authors: Yipeng Sun, Manuel Franco Sevilla
 
 import pickle
+import builtins
 import numpy as np
 import xgboost as xgb
 
@@ -90,9 +91,9 @@ optionally specify the n_estimators parameter for the XGB.''')
 slice_xgb_input = lambda x: slice_array(x, right_idx=len(XGB_TRAIN_BRANCHES))
 
 
-def prints(*args, silent=False):
+def print_wrapper(msg, silent=False):
     if not silent:
-        print(*args)
+        builtins.print(msg)
 
 
 #############
@@ -102,7 +103,7 @@ def prints(*args, silent=False):
 if __name__ == '__main__':
     args = parse_input()
     parti = args.particle
-    print = lambda x: prints(x, args.silent)
+    print = lambda x: print_wrapper(x, silent=args.silent)
 
     directives = []
     directives_debug = [
