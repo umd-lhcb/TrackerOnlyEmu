@@ -2,7 +2,7 @@
 #
 # Author: Yipeng Sun
 # License: BSD 2-clause
-# Last Change: Thu Oct 28, 2021 at 03:06 AM +0200
+# Last Change: Thu Oct 28, 2021 at 03:25 AM +0200
 
 from contextlib import contextmanager
 from time import perf_counter
@@ -26,7 +26,7 @@ def gen_output_dict(arr, names):
     return dict(zip(names, arr.T))
 
 
-def slice_bdt_input(arr, right_idx=5):
+def slice_array(arr, right_idx):
     return arr[:, 0:right_idx]
 
 

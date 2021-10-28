@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Author: Yipeng Sun
-# Last Change: Thu Oct 28, 2021 at 03:12 AM +0200
+# Last Change: Thu Oct 28, 2021 at 03:25 AM +0200
 # Based on the script 'regmva.py' shared by Patrick Owen
 
 import pickle
@@ -19,7 +19,7 @@ from sklearn.tree import DecisionTreeRegressor
 from TrackerOnlyEmu.executor import ExecDirective as EXEC
 from TrackerOnlyEmu.executor import process_directives
 from TrackerOnlyEmu.utils import Timer
-from TrackerOnlyEmu.utils import gen_output_dict, slice_bdt_input
+from TrackerOnlyEmu.utils import gen_output_dict, slice_array
 from TrackerOnlyEmu.emulation.run2_rdx import \
     run2_rdx_l0_hadron_tos_no_bdt_directive_gen
 
@@ -90,6 +90,12 @@ optionally specify output to pickled BDT object.''')
 optionally specify the max_depth parameter for the BDT.''')
 
     return parser.parse_args()
+
+###########
+# Helpers #
+###########
+
+slice_bdt_input = lambda x: slice_array(x, right_idx=len(BDT_TRAIN_BRANCHES))
 
 
 #############

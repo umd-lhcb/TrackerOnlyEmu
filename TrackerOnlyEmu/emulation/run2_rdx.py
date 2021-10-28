@@ -2,7 +2,7 @@
 #
 # Author: Yipeng Sun
 # License: BSD 2-clause
-# Last Change: Thu Oct 28, 2021 at 03:07 AM +0200
+# Last Change: Thu Oct 28, 2021 at 03:11 AM +0200
 
 from itertools import combinations
 from ROOT import gInterpreter
@@ -10,6 +10,36 @@ from ROOT import gInterpreter
 from TrackerOnlyEmu.loader import load_file, load_cpp
 from TrackerOnlyEmu.executor import ExecDirective as EXEC
 from TrackerOnlyEmu.utils import func_call_gen
+
+
+######################
+# L0 Hadron TOS: XGB #
+######################
+
+XGB_TRAIN_BRANCHES = [
+    'nTracks',  ## To model the NumSPDHits < 450 cut
+    'd0_P',
+    'd0_PT',
+    'k_P',
+    'k_PT',
+    'k_L0Calo_HCAL_realET',
+    'k_L0Calo_HCAL_xProjection',
+    'k_L0Calo_HCAL_yProjection',
+    'k_L0Calo_HCAL_region',
+    'pi_P',
+    'pi_PT',
+    'pi_L0Calo_HCAL_realET',
+    'pi_L0Calo_HCAL_xProjection',
+    'pi_L0Calo_HCAL_yProjection',
+    'pi_L0Calo_HCAL_region',
+    'spi_P',
+    'spi_PT',
+    'spi_TRUEPT',
+    'spi_L0Calo_HCAL_realET',
+    'spi_L0Calo_HCAL_xProjection',
+    'spi_L0Calo_HCAL_yProjection',
+    'spi_L0Calo_HCAL_region',
+]
 
 
 ##############################

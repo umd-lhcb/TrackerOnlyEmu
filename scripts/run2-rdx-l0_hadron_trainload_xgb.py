@@ -15,6 +15,7 @@ from ROOT import gInterpreter, RDataFrame
 from TrackerOnlyEmu.loader import load_file, load_cpp
 from TrackerOnlyEmu.executor import ExecDirective as EXEC
 from TrackerOnlyEmu.executor import process_directives
+from TrackerOnlyEmu.emulation.run2_rdx import XGB_TRAIN_BRANCHES
 
 import xgboost as xgb
 
@@ -22,32 +23,6 @@ import xgboost as xgb
 # Configurables #
 #################
 
-XGB_TRAIN_BRANCHES = [
-    'nTracks',  ## To model the NumSPDHits < 450 cut
-    'd0_P',
-    'd0_PT',
-    'k_P',
-    'k_PT',
-    'k_TRUEPT',
-    'k_L0Calo_HCAL_realET', 
-    'k_L0Calo_HCAL_xProjection',
-    'k_L0Calo_HCAL_yProjection',
-    'k_L0Calo_HCAL_region',
-    'pi_P',
-    'pi_PT',
-    'pi_TRUEPT',
-    'pi_L0Calo_HCAL_realET',
-    'pi_L0Calo_HCAL_xProjection',
-    'pi_L0Calo_HCAL_yProjection',
-    'pi_L0Calo_HCAL_region',
-    'spi_P',
-    'spi_PT',
-    'spi_TRUEPT',
-    'spi_L0Calo_HCAL_realET',
-    'spi_L0Calo_HCAL_xProjection',
-    'spi_L0Calo_HCAL_yProjection',
-    'spi_L0Calo_HCAL_region',
-]
 
 #################################
 # Command line arguments parser #
@@ -109,7 +84,7 @@ if __name__ == '__main__':
     input_vars = np.array(list(init_frame.AsNumpy(columns=XGB_TRAIN_BRANCHES).values())).T
     regression_var = np.array(list(init_frame.AsNumpy(columns=[parti+'_L0HadronDecision_TOS']).values())).astype(int).T.ravel()
 
-    
+
     if not args.load_xgb:
         if not args.silent: print('Start training a classification XGBoost with '+str(args.ntrees)
         +' trees and max-depth = '+str(args.max_depth))
