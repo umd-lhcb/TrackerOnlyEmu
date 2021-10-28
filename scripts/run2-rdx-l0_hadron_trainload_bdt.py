@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Author: Yipeng Sun
-# Last Change: Thu Oct 28, 2021 at 03:25 AM +0200
+# Last Change: Thu Oct 28, 2021 at 04:07 AM +0200
 # Based on the script 'regmva.py' shared by Patrick Owen
 
 import pickle
@@ -20,21 +20,15 @@ from TrackerOnlyEmu.executor import ExecDirective as EXEC
 from TrackerOnlyEmu.executor import process_directives
 from TrackerOnlyEmu.utils import Timer
 from TrackerOnlyEmu.utils import gen_output_dict, slice_array
-from TrackerOnlyEmu.emulation.run2_rdx import \
+from TrackerOnlyEmu.emulation.run2_rdx import (
+    BDT_TRAIN_BRANCHES,
     run2_rdx_l0_hadron_tos_no_bdt_directive_gen
+)
 
 
 #################
 # Configurables #
 #################
-
-BDT_TRAIN_BRANCHES = [
-    'd0_PT',
-    'd0_P',
-    'k_L0Calo_HCAL_realET',  # NOTE: realET is not Trigger ET!
-    'pi_L0Calo_HCAL_realET',
-    'rdiff_k_pi'
-]
 
 # Keep these branches in output ntuples
 ADD_BRANCHES = [

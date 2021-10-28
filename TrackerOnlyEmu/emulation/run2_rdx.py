@@ -2,7 +2,7 @@
 #
 # Author: Yipeng Sun
 # License: BSD 2-clause
-# Last Change: Thu Oct 28, 2021 at 03:55 AM +0200
+# Last Change: Thu Oct 28, 2021 at 04:07 AM +0200
 
 from itertools import combinations
 from ROOT import gInterpreter
@@ -15,6 +15,7 @@ from TrackerOnlyEmu.utils import func_call_gen
 ######################
 # L0 Hadron TOS: XGB #
 ######################
+# Configurables ################################################################
 
 XGB_TRAIN_BRANCHES = [
     'nTracks',  ## To model the NumSPDHits < 450 cut
@@ -44,6 +45,17 @@ XGB_TRAIN_BRANCHES = [
 ##############################
 # L0 Hadron TOS: RD+, no BDT #
 ##############################
+# Configurables ################################################################
+
+BDT_TRAIN_BRANCHES = [
+    'd0_PT',
+    'd0_P',
+    'k_L0Calo_HCAL_realET',  # NOTE: realET is not Trigger ET!
+    'pi_L0Calo_HCAL_realET',
+    'rdiff_k_pi'  # NOTE: This has to be computed by us!
+]
+
+
 # Main #########################################################################
 
 def run2_rdx_l0_hadron_tos_no_bdt_directive_gen(year):
