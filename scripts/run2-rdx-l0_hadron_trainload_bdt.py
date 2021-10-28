@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Author: Yipeng Sun
-# Last Change: Thu Oct 28, 2021 at 03:26 PM +0200
+# Last Change: Thu Oct 28, 2021 at 05:01 PM +0200
 # Based on the script 'regmva.py' shared by Patrick Owen
 
 import pickle
@@ -86,6 +86,9 @@ optionally specify output to pickled BDT object.''')
     parser.add_argument('--max-depth', default=4, type=int, help='''
 optionally specify the max_depth parameter for the BDT.''')
 
+    parser.add_argument('--ntrees', default=300, type=int, help='''
+optionally specify the n_estimators parameter for the BDT.''')
+
     return parser.parse_args()
 
 
@@ -145,10 +148,10 @@ if __name__ == '__main__':
     regression_var = dfs[-1].AsNumpy(columns=['d0_et_diff'])['d0_et_diff']
 
     if not args.load:
-        print('Start training for a regression BDT...')
+        print(f'Start training a BDT with {args.ntrees} trees and max-depth {args.max_depth}.')
         rng = np.random.RandomState(1)
         bdt = AdaBoostRegressor(DecisionTreeRegressor(max_depth=args.max_depth),
-                                n_estimators=300, random_state=rng)
+                                n_estimators=args.ntrees, random_state=rng)
         bdt_input = slice_bdt_input(input_vars)
 
         with Timer() as t:
