@@ -2,7 +2,7 @@
 #
 # Author: Yipeng Sun
 # License: BSD 2-clause
-# Last Change: Thu Oct 28, 2021 at 04:07 AM +0200
+# Last Change: Thu Oct 28, 2021 at 04:50 AM +0200
 
 from itertools import combinations
 from ROOT import gInterpreter
@@ -23,18 +23,21 @@ XGB_TRAIN_BRANCHES = [
     'd0_PT',
     'k_P',
     'k_PT',
+    'k_TRUEPT',
     'k_L0Calo_HCAL_realET',
     'k_L0Calo_HCAL_xProjection',
     'k_L0Calo_HCAL_yProjection',
     'k_L0Calo_HCAL_region',
     'pi_P',
     'pi_PT',
+    'pi_TRUEPT',
     'pi_L0Calo_HCAL_realET',
     'pi_L0Calo_HCAL_xProjection',
     'pi_L0Calo_HCAL_yProjection',
     'pi_L0Calo_HCAL_region',
     # 'spi_P',
     # 'spi_PT',
+    # 'spi_TRUEPT',
     # 'spi_L0Calo_HCAL_realET',
     # 'spi_L0Calo_HCAL_xProjection',
     # 'spi_L0Calo_HCAL_yProjection',
