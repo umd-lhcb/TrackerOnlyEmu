@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 #
 # Authors: Yipeng Sun, Manuel Franco Sevilla
+# Last Change: Thu Oct 28, 2021 at 04:11 AM +0200
 
 import pickle
-import builtins
 import numpy as np
-import xgboost as xgb
 
 import ROOT
 ROOT.PyConfig.IgnoreCommandLineOptions = True  # Don't hijack argparse!
@@ -13,12 +12,13 @@ ROOT.PyConfig.DisableRootLogon = True  # Don't read .rootlogon.py
 
 from argparse import ArgumentParser
 from ROOT import gInterpreter, RDataFrame
+from xgboost import XGBClassifier
 
 from TrackerOnlyEmu.loader import load_file
 from TrackerOnlyEmu.executor import ExecDirective as EXEC
 from TrackerOnlyEmu.executor import process_directives
 from TrackerOnlyEmu.utils import Timer
-from TrackerOnlyEmu.utils import gen_output_dict, slice_array
+from TrackerOnlyEmu.utils import gen_output_dict, slice_array, print_wrapper
 from TrackerOnlyEmu.emulation.run2_rdx import XGB_TRAIN_BRANCHES
 
 
@@ -91,11 +91,6 @@ optionally specify the n_estimators parameter for the XGB.''')
 slice_xgb_input = lambda x: slice_array(x, right_idx=len(XGB_TRAIN_BRANCHES))
 
 
-def print_wrapper(msg, silent=False):
-    if not silent:
-        builtins.print(msg)
-
-
 #############
 # Train xgb #
 #############
@@ -144,7 +139,7 @@ if __name__ == '__main__':
         # Python 3.6+: f-string
         print(f'Start training a classification XGBoost with {args.ntrees} trees and max-depth {args.max_depth}.')
 
-        xgb = xgb.XGBClassifier(
+        xgb = XGBClassifier(
             n_estimators=args.ntrees, max_depth=args.max_depth,
             use_label_encoder=False, eval_metric='mlogloss', reg_lambda=0.5)
         xgb_input = slice_xgb_input(input_vars)
@@ -159,7 +154,7 @@ if __name__ == '__main__':
                 pickle.dump(xgb, f)
     else:
         print('Load already serialized BDT...')
-        xgb = pickle.load(open(args.load_xgb, 'rb'))
+        xgb = pickle.load(open(load_file(args.load_xgb), 'rb'))
 
     # Output the ntuple
     print('Generate output ntuple...')

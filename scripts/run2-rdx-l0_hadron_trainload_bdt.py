@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Author: Yipeng Sun
-# Last Change: Thu Oct 28, 2021 at 04:07 AM +0200
+# Last Change: Thu Oct 28, 2021 at 04:12 AM +0200
 # Based on the script 'regmva.py' shared by Patrick Owen
 
 import pickle
@@ -16,6 +16,7 @@ from ROOT import gInterpreter, RDataFrame
 from sklearn.ensemble import AdaBoostRegressor
 from sklearn.tree import DecisionTreeRegressor
 
+from TrackerOnlyEmu.loader import load_file
 from TrackerOnlyEmu.executor import ExecDirective as EXEC
 from TrackerOnlyEmu.executor import process_directives
 from TrackerOnlyEmu.utils import Timer
@@ -100,7 +101,6 @@ if __name__ == '__main__':
     args = parse_input()
 
     directives = run2_rdx_l0_hadron_tos_no_bdt_directive_gen(args.year)
-
     directives_debug = [
         # Reference variables
         EXEC('Define', 'd0_l0_hadron_tos',

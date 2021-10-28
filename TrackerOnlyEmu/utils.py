@@ -2,7 +2,9 @@
 #
 # Author: Yipeng Sun
 # License: BSD 2-clause
-# Last Change: Thu Oct 28, 2021 at 03:25 AM +0200
+# Last Change: Thu Oct 28, 2021 at 04:08 AM +0200
+
+import builtins
 
 from contextlib import contextmanager
 from time import perf_counter
@@ -16,6 +18,11 @@ from time import perf_counter
 def Timer():
     start = perf_counter()
     yield lambda: perf_counter() - start
+
+
+def print_wrapper(msg, silent=False):
+    if not silent:
+        builtins.print(msg)
 
 
 #############
