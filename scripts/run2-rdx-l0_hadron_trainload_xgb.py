@@ -16,7 +16,8 @@ from ROOT import gInterpreter, RDataFrame
 from TrackerOnlyEmu.loader import load_file
 from TrackerOnlyEmu.executor import ExecDirective as EXEC
 from TrackerOnlyEmu.executor import process_directives
-from TrackerOnlyEmu.utils import slice_array
+from TrackerOnlyEmu.utils import Timer
+from TrackerOnlyEmu.utils import gen_output_dict, slice_array
 from TrackerOnlyEmu.emulation.run2_rdx import XGB_TRAIN_BRANCHES
 
 
@@ -89,6 +90,11 @@ optionally specify the n_estimators parameter for the XGB.''')
 slice_xgb_input = lambda x: slice_array(x, right_idx=len(XGB_TRAIN_BRANCHES))
 
 
+def prints(*args, silent=False):
+    if not silent:
+        print(*args)
+
+
 #############
 # Train xgb #
 #############
@@ -96,6 +102,7 @@ slice_xgb_input = lambda x: slice_array(x, right_idx=len(XGB_TRAIN_BRANCHES))
 if __name__ == '__main__':
     args = parse_input()
     parti = args.particle
+    print = lambda x: prints(x, args.silent)
 
     directives = []
     directives_debug = [
@@ -133,39 +140,31 @@ if __name__ == '__main__':
         columns=[parti+'_L0HadronDecision_TOS'])[parti+'_L0HadronDecision_TOS']
 
     if not args.load_xgb:
-        if not args.silent: print('Start training a classification XGBoost with '+str(args.ntrees)
-        +' trees and max-depth = '+str(args.max_depth))
-        time_start = time.perf_counter()
-        xgb_r = xgb.XGBClassifier(n_estimators=args.ntrees, max_depth=args.max_depth,
-        use_label_encoder =False,eval_metric='mlogloss',reg_lambda=0.5)
+        # Python 3.6+: f-string
+        print(f'Start training a classification XGBoost with {args.ntrees} trees and max-depth {args.max_depth}.')
 
+        xgb = xgb.XGBClassifier(
+            n_estimators=args.ntrees, max_depth=args.max_depth,
+            use_label_encoder=False, eval_metric='mlogloss', reg_lambda=0.5)
         xgb_input = slice_xgb_input(input_vars)
-        xgb_r.fit(xgb_input, regression_var)
-        time_stop = time.perf_counter()
-        if not args.silent: print('XGB fit took a total of {:,.2f} sec'.format(time_stop - time_start))
 
-        if args.output != 'None':
-            if not args.silent: print('Export trained XGBoost to '+args.output)
-            with open(args.output, 'wb') as f:
-                pickle.dump(xgb_r, f)
+        with Timer() as t:
+            xgb.fit(xgb_input, regression_var)
+        print('XGB fit took a total of {:,.2f} sec'.format(t()))
 
+        if args.dump_xgb:
+            print('Export trained XGBoost to {}...'.format(args.dump_xgb))
+            with open(args.dump_xgb, 'wb') as f:
+                pickle.dump(xgb, f)
     else:
-        # Variables to add to new tree with XGB output
-        idx_names = ['runNumber', 'eventNumber', 'd0_et_emu_no_bdt']
-        idx_vars = np.array(
-            list(init_frame.AsNumpy(columns=idx_names).values())).T
-        output_tree = dict(zip(idx_names,idx_vars.T))
+        print('Load already serialized BDT...')
+        xgb = pickle.load(open(args.load_xgb, 'rb'))
 
-        # Loading XGB and calculating related variables
-        if not args.silent: print('Loading XGBoost from '+args.load_xgb)
-        xgb_r = pickle.load(open(load_file(args.load_xgb), 'rb'))
-        l0_hadron_tos_emu = xgb_r.predict(input_vars)
-        l0_hadron_prob = xgb_r.predict_proba(input_vars).T[1]
-        output_tree[parti+'_l0_hadron_tos_emu'] = l0_hadron_tos_emu
-        output_tree[parti+'_l0_hadron_prob'] = l0_hadron_prob
-        xgb_rdf = ROOT.RDF.MakeNumpyDataFrame(output_tree)
+    # Output the ntuple
+    print('Generate output ntuple...')
+    output = gen_output_dict(input_vars, XGB_TRAIN_BRANCHES+ADD_BRANCHES)
+    output['d0_l0_hadron_tos_emu_xgb'] = xgb.predict(input_vars)
+    output_df = ROOT.RDF.MakeNumpyDataFrame(output)
 
-        # Saving tree
-        branchKeep = ['runNumber', 'eventNumber',parti+'_l0_hadron_tos_emu',parti+'_l0_hadron_prob']
-        xgb_rdf.Snapshot(args.tree, args.output, branchKeep)
-        if not args.silent: print("Written "+args.output)
+    output_df.Snapshot(args.tree, args.output)
+    print("Ntuple written: "+args.output)
