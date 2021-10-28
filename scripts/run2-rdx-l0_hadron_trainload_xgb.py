@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Authors: Yipeng Sun, Manuel Franco Sevilla
-# Last Change: Thu Oct 28, 2021 at 04:49 AM +0200
+# Last Change: Thu Oct 28, 2021 at 03:28 PM +0200
 
 import pickle
 import numpy as np
@@ -39,6 +39,7 @@ ADD_BRANCHES_DEBUG = [
     'k_p',
     'pi_p',
     'd0_p',
+    'nspdhits'
 ]
 
 
@@ -106,6 +107,9 @@ if __name__ == '__main__':
         EXEC('Define', 'd0_l0_hadron_tos',
              'static_cast<Double_t>(d0_L0HadronDecision_TOS)', True),
 
+        # Global vairables
+        EXEC('Define', 'nspdhits', 'NumSPDHits', True),
+
         # Fit variables
         EXEC('Define', 'q2', 'FitVar_q2 / 1e6', True),
         EXEC('Define', 'mmiss2', 'FitVar_Mmiss2 / 1e6', True),
@@ -134,7 +138,8 @@ if __name__ == '__main__':
         list(dfs[-1].AsNumpy(
             columns=XGB_TRAIN_BRANCHES+ADD_BRANCHES).values())).T
     regression_var = dfs[-1].AsNumpy(
-        columns=[parti+'_L0HadronDecision_TOS'])[parti+'_L0HadronDecision_TOS']
+        columns=[parti+'_L0HadronDecision_TOS'])[
+            parti+'_L0HadronDecision_TOS'].astype(int)  # Type coercion
 
     if not args.load:
         # Python 3.6+: f-string
