@@ -1,5 +1,5 @@
 # Author: Yipeng Sun
-# Last Change: Tue Oct 26, 2021 at 02:44 PM +0200
+# Last Change: Fri Oct 29, 2021 at 12:28 AM +0200
 
 import setuptools
 import subprocess
@@ -56,8 +56,8 @@ setup(
     include_package_data=True,
     install_requires=[
         'numpy',
-        'scikit-learn',
-        'xgboost'
+        'scikit-learn~=1.0.0',
+        'xgboost~=1.5.0'
     ],
     classifiers=[
         'Programming Language :: Python :: 3',
