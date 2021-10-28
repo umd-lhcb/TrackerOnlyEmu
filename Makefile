@@ -1,5 +1,5 @@
 # Author: Yipeng Sun
-# Last Change: Wed Oct 27, 2021 at 02:30 PM +0200
+# Last Change: Thu Oct 28, 2021 at 04:03 AM +0200
 
 .PHONY: sdist clean install install-egg
 
@@ -11,7 +11,7 @@ sdist:
 clean:
 	@rm -rf ./dist
 	@rm -rf ./TrackerOnlyEmu.egg-info
-	@rm -rf ./gen
+	@rm -rf ./gen/*
 
 install:
 	@pip install .
@@ -27,8 +27,13 @@ test-l0-hadron-bdt:
 		--max-depth 4 \
 		--dump-bdt ./gen/bdt4.pickle
 
+test-l0-hadron-xgb:
+	scripts/run2-rdx-l0_hadron_trainload_xgb.py ./samples/run2-rdx-train_xgb.root ./gen/emu_l0_hadron_xgb.root \
+		--max-depth 4 \
+		--dump-xgb ./gen/xgb4.pickle
+
 test-hlt1:
-	scripts/run2-rdx-hlt1.py ./samples/rdx-tracker_only.root ./gen/emu_hlt1.root
+	scripts/run2-rdx-hlt1.py ./samples/run2-rdx-sample.root ./gen/emu_hlt1.root
 
 test-l0-global-tis:
-	scripts/run2-rdx-l0_global_tis.py ./samples/rdx-tracker_only.root ./gen/emu_l0_global_tis.root
+	scripts/run2-rdx-l0_global_tis.py ./samples/run2-rdx-sample.root ./gen/emu_l0_global_tis.root
