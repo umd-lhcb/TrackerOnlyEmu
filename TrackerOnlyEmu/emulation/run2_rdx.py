@@ -2,13 +2,14 @@
 #
 # Author: Yipeng Sun
 # License: BSD 2-clause
-# Last Change: Wed Oct 27, 2021 at 03:44 AM +0200
+# Last Change: Thu Oct 28, 2021 at 03:07 AM +0200
 
 from itertools import combinations
 from ROOT import gInterpreter
 
 from TrackerOnlyEmu.loader import load_file, load_cpp
 from TrackerOnlyEmu.executor import ExecDirective as EXEC
+from TrackerOnlyEmu.utils import func_call_gen
 
 
 ##############################
@@ -151,13 +152,6 @@ TWO_TRACK_COMB_SPEC_BRANCHES = {
 
 
 # Helpers ######################################################################
-
-def func_call_gen(func, params, particle=None):
-    if particle is not None:
-        params = [particle+'_'+p for p in params]
-
-    return '{}({})'.format(func, ', '.join(params))
-
 
 def global_corr_gen(particle):
     params = [particle+'_'+b for b in GLOBAL_CORR_BRANCHES['particle']]

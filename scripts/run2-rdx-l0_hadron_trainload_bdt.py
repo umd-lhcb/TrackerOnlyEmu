@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Author: Yipeng Sun
-# Last Change: Wed Oct 27, 2021 at 03:44 AM +0200
+# Last Change: Thu Oct 28, 2021 at 02:48 AM +0200
 # Based on the script 'regmva.py' shared by Patrick Owen
 
 import pickle
@@ -12,8 +12,6 @@ ROOT.PyConfig.IgnoreCommandLineOptions = True  # Don't hijack argparse!
 ROOT.PyConfig.DisableRootLogon = True  # Don't read .rootlogon.py
 
 from argparse import ArgumentParser
-from time import perf_counter
-from contextlib import contextmanager
 
 from ROOT import gInterpreter, RDataFrame
 from sklearn.ensemble import AdaBoostRegressor
@@ -21,6 +19,8 @@ from sklearn.tree import DecisionTreeRegressor
 
 from TrackerOnlyEmu.executor import ExecDirective as EXEC
 from TrackerOnlyEmu.executor import process_directives
+from TrackerOnlyEmu.utils import Timer
+from TrackerOnlyEmu.utils import gen_output_dict, slice_bdt_input
 from TrackerOnlyEmu.emulation.run2_rdx import \
     run2_rdx_l0_hadron_tos_no_bdt_directive_gen
 
@@ -91,24 +91,6 @@ optionally specify output to pickled BDT object.''')
 optionally specify the max_depth parameter for the BDT.''')
 
     return parser.parse_args()
-
-
-###########
-# Helpers #
-###########
-
-def gen_output_dict(arr, names):
-    return dict(zip(names, arr.T))
-
-
-def slice_bdt_input(arr, right_idx=len(BDT_TRAIN_BRANCHES)):
-    return arr[:, 0:right_idx]
-
-
-@contextmanager
-def Timer():
-    start = perf_counter()
-    yield lambda: perf_counter() - start
 
 
 #############
