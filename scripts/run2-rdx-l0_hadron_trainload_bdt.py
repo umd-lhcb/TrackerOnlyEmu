@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Author: Yipeng Sun
-# Last Change: Thu Oct 28, 2021 at 04:27 AM +0200
+# Last Change: Thu Oct 28, 2021 at 04:39 AM +0200
 # Based on the script 'regmva.py' shared by Patrick Owen
 
 import pickle
@@ -105,7 +105,7 @@ if __name__ == '__main__':
     directives_debug = [
         # Reference variables
         EXEC('Define', 'd0_l0_hadron_tos',
-             'static_cast<Int_t>(d0_L0HadronDecision_TOS)', True),
+             'static_cast<Double_t>(d0_L0HadronDecision_TOS)', True),
 
         # Fit variables
         EXEC('Define', 'q2', 'FitVar_q2 / 1e6', True),

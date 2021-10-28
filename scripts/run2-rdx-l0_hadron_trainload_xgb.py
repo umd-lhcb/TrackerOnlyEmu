@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Authors: Yipeng Sun, Manuel Franco Sevilla
-# Last Change: Thu Oct 28, 2021 at 04:26 AM +0200
+# Last Change: Thu Oct 28, 2021 at 04:40 AM +0200
 
 import pickle
 import numpy as np
@@ -104,7 +104,7 @@ if __name__ == '__main__':
     directives_debug = [
         # Reference variables
         EXEC('Define', 'd0_l0_hadron_tos',
-             'static_cast<Int_t>(d0_L0HadronDecision_TOS)', True),
+             'static_cast<Double_t>(d0_L0HadronDecision_TOS)', True),
 
         # Fit variables
         EXEC('Define', 'q2', 'FitVar_q2 / 1e6', True),
@@ -131,7 +131,8 @@ if __name__ == '__main__':
         dfs = [init_frame]
 
     input_vars = np.array(
-        list(dfs[-1].AsNumpy(columns=XGB_TRAIN_BRANCHES).values())).T
+        list(dfs[-1].AsNumpy(
+            columns=XGB_TRAIN_BRANCHES+ADD_BRANCHES).values())).T
     regression_var = dfs[-1].AsNumpy(
         columns=[parti+'_L0HadronDecision_TOS'])[parti+'_L0HadronDecision_TOS']
 
