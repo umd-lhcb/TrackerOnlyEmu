@@ -2,7 +2,7 @@
 #
 # Author: Yipeng Sun
 # License: BSD 2-clause
-# Last Change: Tue Oct 26, 2021 at 04:24 PM +0200
+# Last Change: Fri Oct 29, 2021 at 12:57 AM +0200
 
 from dataclasses import dataclass
 from ROOT import RDataFrame
@@ -26,6 +26,9 @@ def process_single_directive(attr, branch, instruct):
 def process_directives(directives, init_frame):
     frames = []
     branches = []
+
+    if not directives:
+        return [init_frame], branches
 
     for d in directives:
         if not frames:

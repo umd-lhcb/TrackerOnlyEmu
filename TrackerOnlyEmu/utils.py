@@ -2,9 +2,10 @@
 #
 # Author: Yipeng Sun
 # License: BSD 2-clause
-# Last Change: Thu Oct 28, 2021 at 04:08 AM +0200
+# Last Change: Fri Oct 29, 2021 at 01:37 AM +0200
 
 import builtins
+import numpy as np
 
 from contextlib import contextmanager
 from time import perf_counter
@@ -28,6 +29,17 @@ def print_wrapper(msg, silent=False):
 #############
 # Run 2 RDX #
 #############
+
+def get_df_vars(frame, branches, transpose=True):
+    if isinstance(branches, list):
+        brs = np.array(list(frame.AsNumpy(columns=branches).values()))
+        if transpose:
+            return brs.T
+        else:
+            return brs
+
+    return frame.AsNumpy(columns=[branches])[branches]
+
 
 def gen_output_dict(arr, names):
     return dict(zip(names, arr.T))
