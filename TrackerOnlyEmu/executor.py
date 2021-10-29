@@ -2,7 +2,7 @@
 #
 # Author: Yipeng Sun
 # License: BSD 2-clause
-# Last Change: Fri Oct 29, 2021 at 12:57 AM +0200
+# Last Change: Fri Oct 29, 2021 at 04:01 PM +0200
 
 from dataclasses import dataclass
 from ROOT import RDataFrame
@@ -25,7 +25,7 @@ def process_single_directive(attr, branch, instruct):
 
 def process_directives(directives, init_frame):
     frames = []
-    branches = []
+    branches = vector('string')()
 
     if not directives:
         return [init_frame], branches
@@ -41,7 +41,7 @@ def process_directives(directives, init_frame):
         frames.append(cur_frame)
 
         if d.keep:
-            branches.append(d.branch)
+            branches.push_back(d.branch)
 
     return frames, branches
 
