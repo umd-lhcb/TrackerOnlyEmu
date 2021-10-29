@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Author: Yipeng Sun
-# Last Change: Fri Oct 29, 2021 at 02:24 AM +0200
+# Last Change: Fri Oct 29, 2021 at 02:33 AM +0200
 # Based on the script 'regmva.py' shared by Patrick Owen
 
 import pickle
@@ -21,10 +21,7 @@ from TrackerOnlyEmu.executor import ExecDirective as EXEC
 from TrackerOnlyEmu.executor import process_directives
 from TrackerOnlyEmu.utils import Timer
 from TrackerOnlyEmu.utils import gen_output_dict, get_df_vars
-from TrackerOnlyEmu.emulation.run2_rdx import (
-    BDT_TRAIN_BRANCHES,
-    run2_rdx_l0_hadron_tos_no_bdt_directive_gen
-)
+# from TrackerOnlyEmu.emulation.run2_rdx import ()
 
 
 #################
@@ -52,6 +49,8 @@ def bdt_prepare():
 
 
 REGRESSOR_CONFIG = dict()
+
+# BDT
 REGRESSOR_CONFIG['bdt'] = {
     'train_brs': [
         'd0_PT',
@@ -174,7 +173,7 @@ specify year.''')
 enable debug mode.
 ''')
 
-    parser.add_argument('-m', '--mode', choices=['bdt', 'xgb'], default='bdg',
+    parser.add_argument('-m', '--mode', choices=['bdt', 'xgb'], default='bdt',
                         help='''
 specify which regressor to use.''')
 
@@ -244,5 +243,5 @@ if __name__ == '__main__':
     output.update(config['predict'](regressor, input_vars))
     output_df = ROOT.RDF.MakeNumpyDataFrame(output)
 
-    out_dfs, _ = process_directives(config['dir_post'], output_df)
+    out_dfs, _ = process_directives(config['dir_post'](args), output_df)
     out_dfs[-1].Snapshot(args.tree, args.output)
