@@ -2,7 +2,7 @@
 #
 # Author: Yipeng Sun
 # License: BSD 2-clause
-# Last Change: Thu Oct 28, 2021 at 04:50 AM +0200
+# Last Change: Fri Oct 29, 2021 at 02:06 AM +0200
 
 from itertools import combinations
 from ROOT import gInterpreter
@@ -12,9 +12,9 @@ from TrackerOnlyEmu.executor import ExecDirective as EXEC
 from TrackerOnlyEmu.utils import func_call_gen
 
 
-######################
-# L0 Hadron TOS: XGB #
-######################
+#################
+# L0 Hadron TOS #
+#################
 # Configurables ################################################################
 
 XGB_TRAIN_BRANCHES = [
@@ -43,75 +43,6 @@ XGB_TRAIN_BRANCHES = [
     # 'spi_L0Calo_HCAL_yProjection',
     # 'spi_L0Calo_HCAL_region',
 ]
-
-
-##############################
-# L0 Hadron TOS: RD+, no BDT #
-##############################
-# Configurables ################################################################
-
-BDT_TRAIN_BRANCHES = [
-    'd0_PT',
-    'd0_P',
-    'k_L0Calo_HCAL_realET',  # NOTE: realET is not Trigger ET!
-    'pi_L0Calo_HCAL_realET',
-    'rdiff_k_pi'  # NOTE: This has to be computed by us!
-]
-
-
-# Main #########################################################################
-
-def run2_rdx_l0_hadron_tos_no_bdt_directive_gen(year):
-    load_cpp('<triggers/l0/run2-L0Hadron.h>')
-
-    gInterpreter.Declare('auto histoResp = new TFile("{}");'.format(
-        load_file('<triggers/l0/hcal_et_response.root>')))
-    gInterpreter.Declare('auto histoCluster = new TFile("{}");'.format(
-        load_file('<triggers/l0/hcal_two_part_clusters.root>')))
-
-    epilogue = '''
-    auto hResp = readSinglePartResp(histoResp);
-
-    auto hSharedIn  = static_cast<TH1D*>(histoCluster->Get("shared_with_radial_inner"));
-    auto hSharedOut = static_cast<TH1D*>(histoCluster->Get("shared_with_radial_outer"));
-
-    auto hMissIn  = static_cast<TH1D*>(histoCluster->Get("missing_with_radial_inner"));
-    auto hMissOut = static_cast<TH1D*>(histoCluster->Get("missing_with_radial_outer"));
-    '''
-    gInterpreter.Declare(epilogue)
-
-    return [
-        EXEC('Define', 'k_et_smeared',
-             'singlePartEt(k_P, k_PT, k_L0Calo_HCAL_realET, hResp)', True),
-        EXEC('Define', 'pi_et_smeared',
-             'singlePartEt(pi_P, pi_PT, pi_L0Calo_HCAL_realET, hResp)', True),
-        EXEC('Define', 'rdiff_k_pi', 'rDiff({})'.format(
-            ', '.join([p+'_L0Calo_HCAL_'+d+'Projection'
-                       for p in ['k', 'pi'] for d in ['x', 'y']])),
-             True),
-        EXEC('Define', 'shared_k_pi',
-             'isShared(rdiff_k_pi, k_L0Calo_HCAL_region, pi_L0Calo_HCAL_region, hSharedIn, hSharedOut)',
-             True),
-        EXEC('Define', 'miss_k_pi',
-             'missingFraction(rdiff_k_pi, k_L0Calo_HCAL_region, pi_L0Calo_HCAL_region, hMissIn, hMissOut)',
-             True),
-        EXEC('Define', 'k_et_emu_no_bdt',
-             'twoPartEt(k_et_smeared, pi_et_smeared, shared_k_pi, miss_k_pi)',
-             True),
-        EXEC('Define', 'pi_et_emu_no_bdt',
-             'twoPartEt(pi_et_smeared, k_et_smeared, shared_k_pi, miss_k_pi)',
-             True),
-        EXEC('Define', 'd0_et_emu_no_bdt',
-             'TMath::Max(k_et_emu_no_bdt, pi_et_emu_no_bdt)', True),
-        EXEC('Define', 'd0_l0_hadron_tos_emu_no_bdt',
-             'static_cast<Double_t>(l0HadronTriggerEmu(d0_et_emu_no_bdt, {}))'.format(year),
-             True),
-        EXEC('Define', 'd0_trg_et',
-             'capHcalResp(k_L0Calo_HCAL_TriggerET, pi_L0Calo_HCAL_TriggerET)',
-             True),
-        EXEC('Define', 'd0_et_diff', 'd0_trg_et - d0_et_emu_no_bdt',
-             True),
-    ]
 
 
 #################

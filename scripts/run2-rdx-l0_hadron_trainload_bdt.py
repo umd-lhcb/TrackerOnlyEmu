@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Author: Yipeng Sun
-# Last Change: Thu Oct 28, 2021 at 05:01 PM +0200
+# Last Change: Fri Oct 29, 2021 at 02:24 AM +0200
 # Based on the script 'regmva.py' shared by Patrick Owen
 
 import pickle
@@ -16,11 +16,11 @@ from ROOT import gInterpreter, RDataFrame
 from sklearn.ensemble import AdaBoostRegressor
 from sklearn.tree import DecisionTreeRegressor
 
-from TrackerOnlyEmu.loader import load_file
+from TrackerOnlyEmu.loader import load_cpp, load_file
 from TrackerOnlyEmu.executor import ExecDirective as EXEC
 from TrackerOnlyEmu.executor import process_directives
 from TrackerOnlyEmu.utils import Timer
-from TrackerOnlyEmu.utils import gen_output_dict, slice_array
+from TrackerOnlyEmu.utils import gen_output_dict, get_df_vars
 from TrackerOnlyEmu.emulation.run2_rdx import (
     BDT_TRAIN_BRANCHES,
     run2_rdx_l0_hadron_tos_no_bdt_directive_gen
@@ -31,83 +31,90 @@ from TrackerOnlyEmu.emulation.run2_rdx import (
 # Configurables #
 #################
 
-# Keep these branches in output ntuples
-ADD_BRANCHES = [
-    'runNumber',
-    'eventNumber',
-    'd0_et_diff',
-    'd0_et_emu_no_bdt',
-]
+def bdt_prepare():
+    load_cpp('<triggers/l0/run2-L0Hadron.h>')
 
-ADD_BRANCHES_DEBUG = [
-    'd0_l0_hadron_tos',
-    'd0_l0_hadron_tos_emu_no_bdt',
-    'k_pt',
-    'pi_pt',
-    'd0_pt',
-    'k_p',
-    'pi_p',
-    'd0_p',
-    'd0_trg_et',
-    'nspdhits',
-]
+    gInterpreter.Declare('auto histoResp = new TFile("{}");'.format(
+        load_file('<triggers/l0/hcal_et_response.root>')))
+    gInterpreter.Declare('auto histoCluster = new TFile("{}");'.format(
+        load_file('<triggers/l0/hcal_two_part_clusters.root>')))
+
+    epilogue = '''
+    auto hResp = readSinglePartResp(histoResp);
+
+    auto hSharedIn  = static_cast<TH1D*>(histoCluster->Get("shared_with_radial_inner"));
+    auto hSharedOut = static_cast<TH1D*>(histoCluster->Get("shared_with_radial_outer"));
+
+    auto hMissIn  = static_cast<TH1D*>(histoCluster->Get("missing_with_radial_inner"));
+    auto hMissOut = static_cast<TH1D*>(histoCluster->Get("missing_with_radial_outer"));
+    '''
+    gInterpreter.Declare(epilogue)
 
 
-#################################
-# Command line arguments parser #
-#################################
+REGRESSOR_CONFIG = dict()
+REGRESSOR_CONFIG['bdt'] = {
+    'train_brs': [
+        'd0_PT',
+        'd0_P',
+        'k_L0Calo_HCAL_realET',  # NOTE: realET is not Trigger ET!
+        'pi_L0Calo_HCAL_realET',
+        'rdiff_k_pi'  # NOTE: This has to be computed by us!
+    ],
+    'output_brs': [
+        'runNumber',
+        'eventNumber',
+        'd0_et_diff',
+        'd0_et_emu_no_bdt',
+    ],
+    'debug_brs': [
+        'd0_l0_hadron_tos',
+        'd0_l0_hadron_tos_emu_no_bdt',
+        'k_pt',
+        'pi_pt',
+        'd0_pt',
+        'k_p',
+        'pi_p',
+        'd0_p',
+        'd0_trg_et',
+        'nspdhits',
+    ],
+    'reg_br': 'd0_et_diff',
+    'prep': bdt_prepare,
+    'predict': lambda bdt, input_vars: {
+        'd0_et_diff_pred': bdt.predict(input_vars)
+    },
+    'dir': lambda args: [
+        EXEC('Define', 'k_et_smeared',
+             'singlePartEt(k_P, k_PT, k_L0Calo_HCAL_realET, hResp)', True),
+        EXEC('Define', 'pi_et_smeared',
+             'singlePartEt(pi_P, pi_PT, pi_L0Calo_HCAL_realET, hResp)', True),
+        # Used as a BDT input
+        EXEC('Define', 'rdiff_k_pi', 'rDiff({})'.format(
+            ', '.join([p+'_L0Calo_HCAL_'+d+'Projection'
+                       for p in ['k', 'pi'] for d in ['x', 'y']])), True),
 
-def parse_input():
-    parser = ArgumentParser(
-        description='Train a regression BDT for a better emulation of L0Hadron trigger.')
+        # Trigger emulation based on physical considerations
+        EXEC('Define', 'shared_k_pi',
+             'isShared(rdiff_k_pi, k_L0Calo_HCAL_region, pi_L0Calo_HCAL_region, hSharedIn, hSharedOut)',
+             True),
+        EXEC('Define', 'miss_k_pi',
+             'missingFraction(rdiff_k_pi, k_L0Calo_HCAL_region, pi_L0Calo_HCAL_region, hMissIn, hMissOut)',
+             True),
+        EXEC('Define', 'k_et_emu_no_bdt',
+             'twoPartEt(k_et_smeared, pi_et_smeared, shared_k_pi, miss_k_pi)', True),
+        EXEC('Define', 'pi_et_emu_no_bdt',
+             'twoPartEt(pi_et_smeared, k_et_smeared, shared_k_pi, miss_k_pi)', True),
+        EXEC('Define', 'd0_et_emu_no_bdt',
+             'TMath::Max(k_et_emu_no_bdt, pi_et_emu_no_bdt)', True),
+        EXEC('Define', 'd0_l0_hadron_tos_emu_no_bdt',
+             'static_cast<Int_t>(l0HadronTriggerEmu(d0_et_emu_no_bdt, {}))'.format(args.year), True),
+        EXEC('Define', 'd0_trg_et',
+             'capHcalResp(k_L0Calo_HCAL_TriggerET, pi_L0Calo_HCAL_TriggerET)', True),
 
-    parser.add_argument('input', help='''
-specify input ntuple file.''')
-
-    parser.add_argument('output', help='''
-specify output ntuple file.''')
-
-    parser.add_argument('-t', '--tree', default='TupleB0/DecayTree', help='''
-specify tree name.''')
-
-    parser.add_argument('-y', '--year', default='2016', help='''
-specify year.''')
-
-    parser.add_argument('--debug', action='store_true', help='''
-enable debug mode.
-''')
-
-    parser.add_argument('--load', default=None, help='''
-optionally specify serialized BDT to load.''')
-
-    parser.add_argument('--dump', default=None, help='''
-optionally specify output to pickled BDT object.''')
-
-    parser.add_argument('--max-depth', default=4, type=int, help='''
-optionally specify the max_depth parameter for the BDT.''')
-
-    parser.add_argument('--ntrees', default=300, type=int, help='''
-optionally specify the n_estimators parameter for the BDT.''')
-
-    return parser.parse_args()
-
-
-###########
-# Helpers #
-###########
-
-slice_bdt_input = lambda x: slice_array(x, right_idx=len(BDT_TRAIN_BRANCHES))
-
-
-#############
-# Train BDT #
-#############
-
-if __name__ == '__main__':
-    args = parse_input()
-
-    directives = run2_rdx_l0_hadron_tos_no_bdt_directive_gen(args.year)
-    directives_debug = [
+        # Regression variable
+        EXEC('Define', 'd0_et_diff', 'd0_trg_et - d0_et_emu_no_bdt', True),
+    ],
+    'dir_debug': lambda args: [
         # Reference variables
         EXEC('Define', 'd0_l0_hadron_tos',
              'static_cast<Double_t>(d0_L0HadronDecision_TOS)', True),
@@ -133,55 +140,109 @@ if __name__ == '__main__':
         EXEC('Define', 'k_trg_et', 'k_L0Calo_HCAL_TriggerET', True),
         EXEC('Define', 'pi_real_et', 'pi_L0Calo_HCAL_realET', True),
         EXEC('Define', 'pi_trg_et', 'pi_L0Calo_HCAL_TriggerET', True),
-    ]
+    ],
+    'dir_post': lambda args: [
+        EXEC('Define', 'd0_et_emu', 'capHcalResp(d0_et_emu_no_bdt + d0_et_diff_pred)', True),
+        EXEC('Define', 'd0_et_trg_pred_diff', 'd0_et_diff - d0_et_diff_pred', True),
+        EXEC('Define', 'd0_l0_hadron_tos_emu_bdt',
+             'static_cast<Double_t>(l0HadronTriggerEmu(d0_et_emu, {}))'.format(args.year), True),
+    ],
+}
 
+
+#################################
+# Command line arguments parser #
+#################################
+
+def parse_input():
+    parser = ArgumentParser(
+        description='Train a regression BDT/XGB for a better emulation of L0Hadron TOS trigger.')
+
+    parser.add_argument('input', help='''
+specify input ntuple file.''')
+
+    parser.add_argument('output', help='''
+specify output ntuple file.''')
+
+    parser.add_argument('-t', '--tree', default='TupleB0/DecayTree', help='''
+specify tree name.''')
+
+    parser.add_argument('-y', '--year', default='2016', help='''
+specify year.''')
+
+    parser.add_argument('--debug', action='store_true', help='''
+enable debug mode.
+''')
+
+    parser.add_argument('-m', '--mode', choices=['bdt', 'xgb'], default='bdg',
+                        help='''
+specify which regressor to use.''')
+
+    parser.add_argument('--load', default=None, help='''
+optionally specify serialized BDT to load.''')
+
+    parser.add_argument('--dump', default=None, help='''
+optionally specify output to pickled BDT object.''')
+
+    parser.add_argument('--max-depth', default=4, type=int, help='''
+optionally specify the max_depth parameter for the BDT.''')
+
+    parser.add_argument('--ntrees', default=300, type=int, help='''
+optionally specify the n_estimators parameter for the BDT.''')
+
+    return parser.parse_args()
+
+
+#############
+# Train BDT #
+#############
+
+if __name__ == '__main__':
+    args = parse_input()
+    config = REGRESSOR_CONFIG[args.mode]
+
+    config['prep']()
+    train_brs = config['train_brs']
+    reg_br = config['reg_br']
+    output_brs = config['output_brs']
+
+    directives = config['dir'](args)
     if args.debug:
-        directives += directives_debug
-        ADD_BRANCHES += ADD_BRANCHES_DEBUG
+        directives += config['dir_debug'](args)
+        output_brs += config['debug_brs']
 
     init_frame = RDataFrame(args.tree, args.input)
     dfs, _ = process_directives(directives, init_frame)
 
-    input_vars = np.array(
-        list(dfs[-1].AsNumpy(
-            columns=BDT_TRAIN_BRANCHES+ADD_BRANCHES).values())).T
-    regression_var = dfs[-1].AsNumpy(columns=['d0_et_diff'])['d0_et_diff']
+    input_vars = get_df_vars(dfs[-1], train_brs)
+    regression_var = get_df_vars(dfs[-1], reg_br)
 
     if not args.load:
-        print(f'Start training a BDT with {args.ntrees} trees and max-depth {args.max_depth}.')
-        rng = np.random.RandomState(1)
-        bdt = AdaBoostRegressor(DecisionTreeRegressor(max_depth=args.max_depth),
-                                n_estimators=args.ntrees, random_state=rng)
-        bdt_input = slice_bdt_input(input_vars)
+        print(f'Start training a {args.mode} with {args.ntrees} trees and max-depth {args.max_depth}.')
+        if args.mode == 'bdt':
+            regressor = AdaBoostRegressor(
+                DecisionTreeRegressor(max_depth=args.max_depth),
+                n_estimators=args.ntrees, random_state=np.random.RandomState(1))
 
         with Timer() as t:
-            bdt.fit(bdt_input, regression_var)
+            regressor.fit(input_vars, regression_var)
         print('BDT fitted. It takes a total of {:,.2f} sec'.format(t()))
 
         if args.dump:
-            print('Export trained BDT to {}...'.format(args.dump))
+            print(f'Export trained {args.mode} to {args.dump}...')
             with open(args.dump, 'wb') as f:
-                pickle.dump(bdt, f)
+                pickle.dump(regression_var, f)
 
     else:
-        print('Load already serialized BDT...')
+        print(f'Load already serialized {args.mode}...')
         bdt = pickle.load(open(args.load, 'rb'))
 
     # Output the ntuple
     print('Generate output ntuple...')
-    output = gen_output_dict(input_vars, BDT_TRAIN_BRANCHES+ADD_BRANCHES)
-    output['d0_et_diff_pred'] = bdt.predict(slice_bdt_input(input_vars))
+    output = gen_output_dict(input_vars, train_brs)
+    output.update(dfs[-1].AsNumpy(columns=output_brs))
+    output.update(config['predict'](regressor, input_vars))
     output_df = ROOT.RDF.MakeNumpyDataFrame(output)
 
-    directives_output = [
-        EXEC('Define', 'd0_et_emu', 'capHcalResp(d0_et_emu_no_bdt + d0_et_diff_pred)',
-             True),
-        EXEC('Define', 'd0_et_trg_pred_diff', 'd0_et_diff - d0_et_diff_pred',
-             True),
-        EXEC('Define', 'd0_l0_hadron_tos_emu_bdt',
-             'static_cast<Double_t>(l0HadronTriggerEmu(d0_et_emu, {}))'.format(args.year),
-             True),
-    ]
-
-    out_dfs, _ = process_directives(directives_output, output_df)
+    out_dfs, _ = process_directives(config['dir_post'], output_df)
     out_dfs[-1].Snapshot(args.tree, args.output)
