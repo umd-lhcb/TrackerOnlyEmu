@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Author: Yipeng Sun
-# Last Change: Fri Oct 29, 2021 at 02:33 AM +0200
+# Last Change: Sat Oct 30, 2021 at 02:34 AM +0200
 # Based on the script 'regmva.py' shared by Patrick Owen
 
 import pickle
@@ -133,18 +133,12 @@ REGRESSOR_CONFIG['bdt'] = {
         EXEC('Define', 'd0_p', 'd0_P / 1e3', True),
         EXEC('Define', 'k_p', 'k_P / 1e3', True),
         EXEC('Define', 'pi_p', 'pi_P / 1e3', True),
-
-        # Cut variable candidates
-        EXEC('Define', 'k_real_et', 'k_L0Calo_HCAL_realET', True),
-        EXEC('Define', 'k_trg_et', 'k_L0Calo_HCAL_TriggerET', True),
-        EXEC('Define', 'pi_real_et', 'pi_L0Calo_HCAL_realET', True),
-        EXEC('Define', 'pi_trg_et', 'pi_L0Calo_HCAL_TriggerET', True),
     ],
     'dir_post': lambda args: [
-        EXEC('Define', 'd0_et_emu', 'capHcalResp(d0_et_emu_no_bdt + d0_et_diff_pred)', True),
+        EXEC('Define', 'd0_et_emu_bdt', 'capHcalResp(d0_et_emu_no_bdt + d0_et_diff_pred)', True),
         EXEC('Define', 'd0_et_trg_pred_diff', 'd0_et_diff - d0_et_diff_pred', True),
         EXEC('Define', 'd0_l0_hadron_tos_emu_bdt',
-             'static_cast<Double_t>(l0HadronTriggerEmu(d0_et_emu, {}))'.format(args.year), True),
+             'static_cast<Double_t>(l0HadronTriggerEmu(d0_et_emu_bdt, {}))'.format(args.year), True),
     ],
 }
 
@@ -225,7 +219,7 @@ if __name__ == '__main__':
 
         with Timer() as t:
             regressor.fit(input_vars, regression_var)
-        print('BDT fitted. It takes a total of {:,.2f} sec'.format(t()))
+        print(f'BDT fitted. It takes a total of {t():,.2f} sec')
 
         if args.dump:
             print(f'Export trained {args.mode} to {args.dump}...')
@@ -234,7 +228,7 @@ if __name__ == '__main__':
 
     else:
         print(f'Load already serialized {args.mode}...')
-        bdt = pickle.load(open(args.load, 'rb'))
+        regressor = pickle.load(open(args.load, 'rb'))
 
     # Output the ntuple
     print('Generate output ntuple...')
