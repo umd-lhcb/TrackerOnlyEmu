@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Author: Yipeng Sun
-# Last Change: Sun Oct 31, 2021 at 03:28 AM +0100
+# Last Change: Sun Oct 31, 2021 at 05:29 AM +0100
 # Based on the script 'regmva.py' shared by Patrick Owen
 
 import pickle
@@ -295,7 +295,7 @@ if __name__ == '__main__':
             sys.exit(255)
 
         print(f'Load already serialized {args.mode}...')
-        regressor = pickle.load(open(args.load, 'rb'))
+        regressor = pickle.load(open(load_file(args.load), 'rb'))
 
     # Output the ntuple
     print('Generate output ntuple...')
