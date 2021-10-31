@@ -1,5 +1,5 @@
 # Author: Yipeng Sun
-# Last Change: Sun Oct 31, 2021 at 03:38 AM +0100
+# Last Change: Sun Oct 31, 2021 at 04:31 AM +0100
 
 .PHONY: sdist clean install install-egg
 
@@ -37,3 +37,6 @@ test-hlt1:
 
 test-l0-global-tis:
 	scripts/run2-rdx-l0_global_tis.py ./samples/run2-rdx-sample.root ./gen/emu_l0_global_tis.root
+
+test-rdx-all:
+	scripts/run2-rdx-trg_emu.py ./samples/run2-rdx-sample.root ./gen/emu_all.root
