@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Author: Yipeng Sun
-# Last Change: Sat Oct 30, 2021 at 02:34 AM +0200
+# Last Change: Sun Oct 31, 2021 at 02:02 AM +0100
 # Based on the script 'regmva.py' shared by Patrick Owen
 
 import pickle
@@ -12,6 +12,7 @@ ROOT.PyConfig.IgnoreCommandLineOptions = True  # Don't hijack argparse!
 ROOT.PyConfig.DisableRootLogon = True  # Don't read .rootlogon.py
 
 from argparse import ArgumentParser
+from copy import deepcopy
 from ROOT import gInterpreter, RDataFrame
 from sklearn.ensemble import AdaBoostRegressor
 from sklearn.tree import DecisionTreeRegressor
@@ -118,7 +119,7 @@ REGRESSOR_CONFIG['bdt'] = {
         EXEC('Define', 'd0_l0_hadron_tos',
              'static_cast<Double_t>(d0_L0HadronDecision_TOS)', True),
 
-        # Global vairables
+        # Global variables
         EXEC('Define', 'nspdhits', 'NumSPDHits', True),
 
         # Fit variables
@@ -141,6 +142,14 @@ REGRESSOR_CONFIG['bdt'] = {
              'static_cast<Double_t>(l0HadronTriggerEmu(d0_et_emu_bdt, {}))'.format(args.year), True),
     ],
 }
+
+# Old BDT, needed to deal w/ old training inputs
+REGRESSOR_CONFIG['bdt_old'] = deepcopy(REGRESSOR_CONFIG['bdt'])
+REGRESSOR_CONFIG['bdt_old']['dir'] = lambda args: [
+    EXEC('Define', 'd0_trg_et',
+         'capHcalResp(k_L0Calo_HCAL_TriggerET, pi_L0Calo_HCAL_TriggerET)', True),
+    EXEC('Define', 'd0_et_diff', 'd0_trg_et - d0_et_emu_no_bdt', True),
+]
 
 
 #################################
@@ -167,8 +176,8 @@ specify year.''')
 enable debug mode.
 ''')
 
-    parser.add_argument('-m', '--mode', choices=['bdt', 'xgb'], default='bdt',
-                        help='''
+    parser.add_argument('-m', '--mode', choices=['bdt', 'xgb', 'bdt_old'],
+                        default='bdt', help='''
 specify which regressor to use.''')
 
     parser.add_argument('--load', default=None, help='''
@@ -212,7 +221,7 @@ if __name__ == '__main__':
 
     if not args.load:
         print(f'Start training a {args.mode} with {args.ntrees} trees and max-depth {args.max_depth}.')
-        if args.mode == 'bdt':
+        if args.mode in ['bdt', 'bdt_old']:
             regressor = AdaBoostRegressor(
                 DecisionTreeRegressor(max_depth=args.max_depth),
                 n_estimators=args.ntrees, random_state=np.random.RandomState(1))
