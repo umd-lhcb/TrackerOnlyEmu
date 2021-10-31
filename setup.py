@@ -1,5 +1,5 @@
 # Author: Yipeng Sun
-# Last Change: Fri Oct 29, 2021 at 12:28 AM +0200
+# Last Change: Sun Oct 31, 2021 at 04:58 AM +0100
 
 import setuptools
 import subprocess
@@ -53,6 +53,12 @@ setup(
     long_description_content_type='text/markdown',
     url='https://github.com/umd-lhcb/TrackOnlyEmu',
     packages=setuptools.find_packages(),
+    scripts=[
+        'scripts/run2-rdx-trg_emu.py',
+        'scripts/run2-rdx-hlt1.py',
+        'scripts/run2-rdx-l0_global_tis.py',
+        'scripts/run2-rdx-l0_hadron_tos.py',
+    ],
     include_package_data=True,
     install_requires=[
         'numpy',
