@@ -2,7 +2,7 @@
 #
 # Author: Yipeng Sun
 # License: BSD 2-clause
-# Last Change: Fri Oct 29, 2021 at 02:06 AM +0200
+# Last Change: Sun Oct 31, 2021 at 03:43 AM +0100
 
 from itertools import combinations
 from ROOT import gInterpreter
@@ -18,19 +18,19 @@ from TrackerOnlyEmu.utils import func_call_gen
 # Configurables ################################################################
 
 XGB_TRAIN_BRANCHES = [
-    'nTracks',  ## To model the NumSPDHits < 450 cut
+    'nTracks',  # To model the NumSPDHits < 450 cut
     'd0_P',
     'd0_PT',
     'k_P',
     'k_PT',
-    'k_TRUEPT',
+    # 'k_TRUEPT',
     'k_L0Calo_HCAL_realET',
     'k_L0Calo_HCAL_xProjection',
     'k_L0Calo_HCAL_yProjection',
     'k_L0Calo_HCAL_region',
     'pi_P',
     'pi_PT',
-    'pi_TRUEPT',
+    # 'pi_TRUEPT',
     'pi_L0Calo_HCAL_realET',
     'pi_L0Calo_HCAL_xProjection',
     'pi_L0Calo_HCAL_yProjection',
