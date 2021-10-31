@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 #
 # Author: Yipeng Sun
-# Last Change: Sun Oct 31, 2021 at 02:02 AM +0100
+# Last Change: Sun Oct 31, 2021 at 02:37 AM +0100
 # Based on the script 'regmva.py' shared by Patrick Owen
 
 import pickle
+import sys
 import numpy as np
 
 import ROOT
@@ -233,9 +234,13 @@ if __name__ == '__main__':
         if args.dump:
             print(f'Export trained {args.mode} to {args.dump}...')
             with open(args.dump, 'wb') as f:
-                pickle.dump(regression_var, f)
+                pickle.dump(regressor, f)
 
     else:
+        if args.mode == 'bdt_old':
+            print('bdt_old mode cannot be used for BDT application')
+            sys.exit(255)
+
         print(f'Load already serialized {args.mode}...')
         regressor = pickle.load(open(args.load, 'rb'))
 
