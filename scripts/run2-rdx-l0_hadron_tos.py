@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Author: Yipeng Sun
-# Last Change: Sun Oct 31, 2021 at 02:37 AM +0100
+# Last Change: Sun Oct 31, 2021 at 03:13 AM +0100
 # Based on the script 'regmva.py' shared by Patrick Owen
 
 import pickle
@@ -17,13 +17,14 @@ from copy import deepcopy
 from ROOT import gInterpreter, RDataFrame
 from sklearn.ensemble import AdaBoostRegressor
 from sklearn.tree import DecisionTreeRegressor
+from xgboost import XGBClassifier
 
 from TrackerOnlyEmu.loader import load_cpp, load_file
 from TrackerOnlyEmu.executor import ExecDirective as EXEC
 from TrackerOnlyEmu.executor import process_directives
 from TrackerOnlyEmu.utils import Timer
 from TrackerOnlyEmu.utils import gen_output_dict, get_df_vars
-# from TrackerOnlyEmu.emulation.run2_rdx import ()
+from TrackerOnlyEmu.emulation.run2_rdx import XGB_TRAIN_BRANCHES
 
 
 #################
@@ -51,6 +52,53 @@ def bdt_prepare():
 
 
 REGRESSOR_CONFIG = dict()
+
+# XGB
+REGRESSOR_CONFIG['xgb'] = {
+    'train_brs': XGB_TRAIN_BRANCHES,
+    'output_brs': [
+        'runNumber',
+        'eventNumber',
+    ],
+    'debug_brs': [
+        'd0_l0_hadron_tos',
+        'k_pt',
+        'pi_pt',
+        'd0_pt',
+        'k_p',
+        'pi_p',
+        'd0_p',
+        'nspdhits',
+    ],
+    'reg_br': 'd0_L0HadronDecision_TOS',
+    'prep': lambda: 0,
+    'predict': lambda xgb, input_vars: {
+        'd0_l0_hadron_tos_emu_xgb': xgb.predict_proba(input_vars).T[1],
+    },
+    'dir': lambda args: [],
+    'dir_debug': lambda args: [
+        # Reference variables
+        EXEC('Define', 'd0_l0_hadron_tos',
+             'static_cast<Double_t>(d0_L0HadronDecision_TOS)', True),
+
+        # Global variables
+        EXEC('Define', 'nspdhits', 'NumSPDHits', True),
+
+        # Fit variables
+        EXEC('Define', 'q2', 'FitVar_q2 / 1e6', True),
+        EXEC('Define', 'mmiss2', 'FitVar_Mmiss2 / 1e6', True),
+        EXEC('Define', 'el', 'FitVar_El / 1e3', True),
+
+        # Kinematic variables
+        EXEC('Define', 'd0_pt', 'd0_PT / 1e3', True),
+        EXEC('Define', 'k_pt', 'k_PT / 1e3', True),
+        EXEC('Define', 'pi_pt', 'pi_PT / 1e3', True),
+        EXEC('Define', 'd0_p', 'd0_P / 1e3', True),
+        EXEC('Define', 'k_p', 'k_P / 1e3', True),
+        EXEC('Define', 'pi_p', 'pi_P / 1e3', True),
+    ],
+    'dir_post': lambda args: [],
+}
 
 # BDT
 REGRESSOR_CONFIG['bdt'] = {
@@ -226,6 +274,11 @@ if __name__ == '__main__':
             regressor = AdaBoostRegressor(
                 DecisionTreeRegressor(max_depth=args.max_depth),
                 n_estimators=args.ntrees, random_state=np.random.RandomState(1))
+
+        if args.mode == 'xgb':
+            regressor = XGBClassifier(
+                n_estimators=args.ntrees, max_depth=args.max_depth,
+                use_label_encoder=False, eval_metric='mlogloss', reg_lambda=0.5)
 
         with Timer() as t:
             regressor.fit(input_vars, regression_var)
