@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Author: Yipeng Sun
-# Last Change: Sun Oct 31, 2021 at 03:13 AM +0100
+# Last Change: Sun Oct 31, 2021 at 03:28 AM +0100
 # Based on the script 'regmva.py' shared by Patrick Owen
 
 import pickle
@@ -226,7 +226,7 @@ enable debug mode.
 ''')
 
     parser.add_argument('-m', '--mode', choices=['bdt', 'xgb', 'bdt_old'],
-                        default='bdt', help='''
+                        default='xgb', help='''
 specify which regressor to use.''')
 
     parser.add_argument('--load', default=None, help='''
