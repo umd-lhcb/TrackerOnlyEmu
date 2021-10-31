@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Author: Yipeng Sun
-# Last Change: Sun Oct 31, 2021 at 04:39 AM +0100
+# Last Change: Sun Oct 31, 2021 at 04:55 AM +0100
 
 import ROOT
 ROOT.PyConfig.IgnoreCommandLineOptions = True  # Don't hijack argparse!
@@ -81,32 +81,35 @@ if __name__ == '__main__':
     regressor = pickle.load(open(load_file(args.load), 'rb'))
 
     # Collect the previous output branches
-    base_brs = ['runNumber', 'eventNumber']
     hlt1_brs = [
         'k_hlt1_trackmva_tos_emu', 'pi_hlt1_trackmva_tos_emu',
-        'd0_hlt1_trackmva_tos_emu',
+        'd0_hlt1_trackmva_tos_emu', 'd0_hlt1_twotrackmva_tos_emu',
     ]
     out_np = dfs[-1].AsNumpy(columns=['runNumber', 'eventNumber']+hlt1_brs)
     for br in hlt1_brs:  # Convert to int otherwise RDataFrame doesn't like it
         out_np[br] = out_np[br].astype(int)
 
     out_tmp = {k+'_tmp': v for k, v in out_np.items()}
+    # Add the L0Global TIS branch
+    l0global_tis_br = f'{args.Bmeson}_l0_global_tis_emu'
+    out_tmp[l0global_tis_br] = get_df_vars(dfs[-1], l0global_tis_br)
     # Add the L0Hadron TOS branch
     out_tmp['d0_l0_hadron_tos_emu'] = regressor.predict_proba(input_vars).T[1]
     out_df = ROOT.RDF.MakeNumpyDataFrame(out_tmp)
 
     directives_post = [
-        EXEC('Define', br, f'static_cast<Bool_t>({br}_tmp)')
+        EXEC('Define', br, f'static_cast<Bool_t>({br}_tmp)', True)
         for br in hlt1_brs
     ] + [
-        EXEC('Define', 'runNumber', 'static_cast<UInt_t>(runNumber_tmp)'),
+        EXEC('Define', 'runNumber', 'static_cast<UInt_t>(runNumber_tmp)', True),
         EXEC('Define', 'eventNumber',
-             'static_cast<ULong64_t>(eventNumber_tmp)'),
+             'static_cast<ULong64_t>(eventNumber_tmp)', True),
     ]
 
     # Output
     out_dfs, output_br_names = process_directives(directives_post, out_df)
     output_br_names.push_back('d0_l0_hadron_tos_emu')
+    output_br_names.push_back(l0global_tis_br)
 
     output_opts = RSnapshotOptions()
     output_opts.fMode = 'UPDATE'
