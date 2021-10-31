@@ -1,5 +1,5 @@
 # Author: Yipeng Sun
-# Last Change: Sun Oct 31, 2021 at 04:31 AM +0100
+# Last Change: Sun Oct 31, 2021 at 10:49 PM +0100
 
 .PHONY: sdist clean install install-egg
 
@@ -19,7 +19,7 @@ install:
 install-egg:
 	@python ./setup.py install
 
-test-all: test-hlt1 test-l0-global-tis test-l0-hadron-bdt test-l0-hadron-xgb
+test-all: test-hlt1 test-l0-global-tis test-l0-hadron-bdt test-l0-hadron-xgb test-rdx-all
 
 # RD+'s approach, no longer the nominal
 test-l0-hadron-bdt:
