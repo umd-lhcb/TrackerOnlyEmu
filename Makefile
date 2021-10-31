@@ -1,5 +1,5 @@
 # Author: Yipeng Sun
-# Last Change: Thu Oct 28, 2021 at 04:27 AM +0200
+# Last Change: Sun Oct 31, 2021 at 03:38 AM +0100
 
 .PHONY: sdist clean install install-egg
 
@@ -19,16 +19,16 @@ install:
 install-egg:
 	@python ./setup.py install
 
-test-all: test-hlt1 test-l0-global-tis
+test-all: test-hlt1 test-l0-global-tis test-l0-hadron-bdt test-l0-hadron-xgb
 
 # RD+'s approach, no longer the nominal
 test-l0-hadron-bdt:
-	scripts/run2-rdx-l0_hadron_trainload_bdt.py ./samples/run2-rdx-train_bdt.root ./gen/emu_l0_hadron_bdt.root \
+	scripts/run2-rdx-l0_hadron_tos.py -m bdt ./samples/run2-rdx-train_bdt.root ./gen/emu_l0_hadron_bdt.root \
 		--max-depth 4 \
 		--dump ./gen/bdt4.pickle
 
 test-l0-hadron-xgb:
-	scripts/run2-rdx-l0_hadron_trainload_xgb.py ./samples/run2-rdx-train_xgb.root ./gen/emu_l0_hadron_xgb.root \
+	scripts/run2-rdx-l0_hadron_tos.py -m xgb ./samples/run2-rdx-train_xgb.root ./gen/emu_l0_hadron_xgb.root \
 		--max-depth 4 \
 		--dump ./gen/xgb4.pickle
 

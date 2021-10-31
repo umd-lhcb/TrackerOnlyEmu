@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Author: Yipeng Sun
-# Last Change: Thu Oct 28, 2021 at 03:13 AM +0200
+# Last Change: Sun Oct 31, 2021 at 03:40 AM +0100
 # Stolen from: https://gitlab.cern.ch/lhcb-slb/B02DplusTauNu/-/blob/master/tuple_processing_chain/emulate_L0GlobalTIS.py
 
 import ROOT
@@ -88,8 +88,8 @@ if __name__ == '__main__':
     dfs, output_br_names = process_directives(directives, init_frame)
 
     # Always keep run and event numbers
-    output_br_names.append('runNumber')
-    output_br_names.append('eventNumber')
+    output_br_names.push_back('runNumber')
+    output_br_names.push_back('eventNumber')
 
     # Output
     dfs[-1].Snapshot(args.tree, args.output, output_br_names)
