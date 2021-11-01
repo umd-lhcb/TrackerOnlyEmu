@@ -18,6 +18,25 @@ make test-all
 Note that you should have Python 3.8+ and ROOT 6.22+ installed.
 
 
+## Emulation scripts
+
+Currently we have 4 scripts in the `scripts` folder:
+
+- `run2-rdx-hlt1.py`: Cut-based HLT1Track/TwoTrackMVA emulation. Requires extra branches from DaVinci
+- `run2-rdx-l0_global_tis.py`: Weight-based L0Global TIS emulation, data-driven
+- `run2-rdx-l0_hadron_tos.py`: Weight-based L0Hadron TOS emulation, with a XGB regressor
+- `run2-rdx-trg_emu.py`: Emulate all RDX run 2 triggers in a single script
+
+
+## Sample ntuples
+
+We supply the following sample ntuples in the `samples` folder:
+
+- `run2-rdx-sample.root`: FullSim sample for RDX run 2 for testing trigger application
+- `run2-rdx-train_bdt.root`: Input to train a BDT for L0Hadron TOS (obsolete method)
+- `run2-rdx-train_xgb.root`: Input to train a XGB for L0Hadron TOS (default method)
+
+
 ## Develop this project
 
 This project uses a wrapper to `RDataFrame` to make definition of process
@@ -34,9 +53,10 @@ The directory structures of this project is:
 ├── samples         # sample input ntuples
 ├── scripts         # actual emulation scripts
 └── TrackerOnlyEmu  # some Python files
+    ├── emulation   # emulation code for analyses, currently just for RDX run 2
     └── triggers
         ├── hlt1    # HLT1 emulation C++ code
-        └── l0      # L0 emulation C++ code, input ntuples (e.g. HCAL response), and exported BDT
+        └── l0      # L0 emulation C++ code, input ntuples (e.g. HCAL response), and exported BDT/XGB
 ```
 
 For the Python module:
