@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Author: Yipeng Sun
-# Last Change: Sun Oct 31, 2021 at 05:29 AM +0100
+# Last Change: Tue Nov 09, 2021 at 03:15 PM +0100
 # Based on the script 'regmva.py' shared by Patrick Owen
 
 import pickle
@@ -126,6 +126,8 @@ REGRESSOR_CONFIG['bdt'] = {
         'd0_p',
         'd0_trg_et',
         'nspdhits',
+        'k_L0Calo_HCAL_TriggerET',
+        'pi_L0Calo_HCAL_TriggerET',
     ],
     'reg_br': 'd0_et_diff',
     'prep': bdt_prepare,
