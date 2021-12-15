@@ -2,7 +2,7 @@
 #
 # Author: Yipeng Sun
 # License: BSD 2-clause
-# Last Change: Sun Oct 31, 2021 at 03:43 AM +0100
+# Last Change: Wed Dec 15, 2021 at 02:28 AM +0100
 
 from itertools import combinations
 from ROOT import gInterpreter
@@ -61,10 +61,11 @@ def run2_rdx_l0_global_tis_directive_gen(Bmeson, year):
     '''
     gInterpreter.Declare(epilogue)
 
+    # NOTE: For RDX, we use TRUE B momentum due to missing neutrinos
     return [
         EXEC('Define', '{}_pz'.format(Bmeson),
-             '{}_PZ'.format(Bmeson), True),
-        EXEC('Define', '{}_pt'.format(Bmeson),
+             '{}_TRUEP_Z'.format(Bmeson), True),
+        EXEC('Define', '{}_TRUEPT'.format(Bmeson),
              '{}_PT'.format(Bmeson), True),
         EXEC('Define', '{}_l0_global_tis_emu'.format(Bmeson),
              'l0GlobalTisTriggerEmu({}, {}, {}, hResp)'.format(
