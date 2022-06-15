@@ -16,12 +16,15 @@
       let
         pkgs = import nixpkgs {
           inherit system;
-          overlays = [ self.overlay root-curated.overlay ];
+          overlays = [ root-curated.overlay self.overlay ];
         };
         python = pkgs.python3;
         pythonPackages = python.pkgs;
       in
       {
+        packages = flake-utils.lib.flattenTree {
+          TrackerOnlyEmu = python.withPackages (p: with p; [ TrackerOnlyEmu ]);
+        };
         devShell = pkgs.mkShell rec {
           name = "TrackerOnlyEmu-dev";
           buildInputs = with pythonPackages; [

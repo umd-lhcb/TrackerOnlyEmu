@@ -1,15 +1,8 @@
-let
-  pythonPackageOverlay = overlay: attr: self: super: {
-    ${attr} = self.lib.fix (py:
-      super.${attr}.override (old: {
-        self = py;
-        packageOverrides = self.lib.composeExtensions
-          (old.packageOverrides or (_: _: { }))
-          overlay;
-      }));
-  };
-in
-pythonPackageOverlay
-  (self: super: {
-    TrackerOnlyEmu = super.callPackage ./default.nix { };
-  }) "python3"
+final: prev:
+
+{
+  pythonOverrides = prev.lib.composeExtensions prev.pythonOverrides (finalPy: prevPy: {
+    TrackerOnlyEmu = finalPy.callPackage ./default.nix { };
+  });
+  python3 = prev.python3.override { packageOverrides = final.pythonOverrides; };
+}
