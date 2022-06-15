@@ -40,6 +40,8 @@
 
             # Pinned Python dependencies
             numpy
+            xgboost
+            scikit-learn
           ];
 
           shellHook = ''
