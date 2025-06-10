@@ -57,8 +57,7 @@ bool hlt1TwoTrackInputDec( double PT, double P, double TRCHI2DOF,
       return true;
     return false;
   } else if ( year == 2016 || year == 2017 || year == 2018 ) {
-    if ( PT > 600 && P > 5000 && TRCHI2DOF < 2.5 && TRGHOSTPROB < 0.2 &&
-         BPVIPCHI2 > 4.0 )
+    if ( PT > 600 && P > 5000 && TRCHI2DOF < 2.5 && TRGHOSTPROB < 0.2 && BPVIPCHI2 > 4.0 )
       return true;
     return false;
   } else {
@@ -78,19 +77,13 @@ bool hlt1TwoTrackMVADec( double VDCHI2, double APT, double DOCA, double VCHI2,
   // Reject the obviously non-sensible values
   if ( VDCHI2 <= 0 || APT <= 0 || VCHI2 <= 0 || BPVCORRM <= 0 ) return false;
 
-  if ( year == 2015 || year == 2017 || year == 2018 ) {
+  if ( year == 2015 || year == 2016 || year == 2017 || year == 2018 ) {
     // VFASPF: Vertex functor as particle functor
     bool selPreVertexing = ( DOCA > 0 && DOCA < 10 ) && APT > 2000;
     bool selCombo        = VCHI2 < 10 && ( BPVETA > 2 && BPVETA < 5 ) &&
                     ( BPVCORRM > 1000 && BPVCORRM < 1000000000 ) &&
+                    // BPVDIRA > 0 && MVA > 0.97;  // Alex: I see the value below in the most used 2016 TCK, but second most has 0.97 instead of 0.95
                     BPVDIRA > 0 && MVA > 0.95;
-    return selPreVertexing && selCombo;
-  } else if ( year == 2016 ) {
-    bool selPreVertexing = ( DOCA > 0 && DOCA < 10 ) && APT > 2000;
-    bool selCombo        = VCHI2 < 10 && ( BPVETA > 2 && BPVETA < 5 ) &&
-                    ( BPVCORRM > 100 && BPVCORRM < 1000000000 ) &&
-                    // BPVDIRA > 0 && MVA > 0.97;  // from data TCK
-                    BPVDIRA > 0 && MVA > 0.95;  // Simone's
     return selPreVertexing && selCombo;
   } else {
     cout << "Year: " << year << " not recognized." << endl;

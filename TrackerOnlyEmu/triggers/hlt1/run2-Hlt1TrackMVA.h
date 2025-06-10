@@ -30,8 +30,7 @@ bool hlt1TrackInputDec( double PT, double P, double TRCHI2DOF,
     if ( PT > 500 && P > 3000 && TRCHI2DOF < 4 ) return true;
     return false;
   } else if ( year == 2016 || year == 2017 || year == 2018 ) {
-    if ( PT > 600 && P > 5000 && TRCHI2DOF < 4 && TRGHOSTPROB < 0.999 )
-      return true;
+    if ( PT > 600 && P > 5000 && TRCHI2DOF < 4 && TRGHOSTPROB < 999.0 ) return true;
     return false;
   } else {
     cout << "Year: " << year << " not recognized." << endl;
@@ -51,19 +50,12 @@ bool hlt1TrackMVADec( double PT, double P, double TRCHI2DOF, double BPVIPCHI2,
            trackMVAVal( BPVIPCHI2, PT, 1.0, 1.0, 1.1 ) ) )
       return true;
     return false;
-  } else if ( year == 2016 ) {
+  } else if ( year == 2016 || year == 2017 || year == 2018) {
     if ( TRCHI2DOF >= 2.5 || TRGHOSTPROB >= 0.2 ) return false;
     if ( ( PT > 25000 && BPVIPCHI2 > 7.4 ) ||
          ( ( PT > 1000 && PT < 25000 ) &&
-           // trackMVAVal( BPVIPCHI2, PT, 1.0, 1.0, 2.3 ) ) )  // from data TCK
+           // trackMVAVal( BPVIPCHI2, PT, 1.0, 1.0, 2.3 ) ) )  // Alex: I see the values below in the most used 2016 TCK, but second most has 2.3 instead of 1.1
            trackMVAVal( BPVIPCHI2, PT, 1.0, 1.0, 1.1 ) ) )  // Simone's
-      return true;
-    return false;
-  } else if ( year == 2017 || 2018 ) {
-    if ( TRCHI2DOF >= 2.5 || TRGHOSTPROB >= 0.2 ) return false;
-    if ( ( PT > 25000 && BPVIPCHI2 > 7.4 ) ||
-         ( ( PT > 1000 && PT < 25000 ) &&
-           trackMVAVal( BPVIPCHI2, PT, 1.0, 1.0, 1.1 ) ) )
       return true;
     return false;
   } else {
