@@ -70,10 +70,10 @@ if __name__ == '__main__':
         EXEC('Define', 'el', 'FitVar_El / 1e3', True),
 
         # Log of B meson momenta
-        EXEC('Define', 'log_{}_pz'.format(args.Bmeson),
-             'TMath::Log({}_pz)'.format(args.Bmeson), True),
-        EXEC('Define', 'log_{}_pt'.format(args.Bmeson),
-             'TMath::Log({}_pt)'.format(args.Bmeson), True),
+        EXEC('Define', 'log_{}_true_pz'.format(args.Bmeson),
+             'TMath::Log({}_TRUEP_Z)'.format(args.Bmeson), True),
+        EXEC('Define', 'log_{}_true_pt'.format(args.Bmeson),
+             'TMath::Log({}_TRUEPT)'.format(args.Bmeson), True),
     ]
 
     if args.debug:
