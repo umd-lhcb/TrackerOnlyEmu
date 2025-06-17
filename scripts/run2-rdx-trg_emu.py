@@ -44,14 +44,14 @@ specify output ntuple file.
 specify tree name.
 ''')
 
-    parser.add_argument('-y', '--year', default='2016', help='''
-specify year.''')
+    parser.add_argument('-y', '--year', default='2016', help='specify year.')
+
+    parser.add_argument('-c', '--adhoc_tis_correction', action='store_true', help='specify if ad-hoc L0 Global TIS correction at high B pT should be used')
 
     parser.add_argument('-B', '--Bmeson', default='b0', help='''
 specify the name of the B meson in the tree.''')
 
-    parser.add_argument('-l', '--load',
-                        default='<triggers/l0/xgb4-2016.pickle>', help='''
+    parser.add_argument('-l', '--load', default='<triggers/l0/xgb4-2016.pickle>', help='''
 specify the trained regressor to load.''')
 
     parser.add_argument('--debug', action='store_true', help='''
@@ -69,7 +69,7 @@ if __name__ == '__main__':
     args = parse_input()
 
     # L0Global TIS
-    directives = run2_rdx_l0_global_tis_directive_gen(args.Bmeson, args.year)
+    directives = run2_rdx_l0_global_tis_directive_gen(args.Bmeson, args.year, args.adhoc_tis_correction)
     # HLT 1
     directives += run2_rdx_hlt1_directive_gen(args.Bmeson, args.year)
 

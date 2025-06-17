@@ -67,6 +67,7 @@ float l0GlobalTisTriggerEmu( double PZ, double PT, int year,
     auto binPZ = hist->GetXaxis()->FindBin( TMath::Log( PZ ) );
     auto binPT = hist->GetYaxis()->FindBin( TMath::Log( PT ) );
     if (adhoc_correction && binPT == hist->GetNbinsY()) { // only apply correction to high log(pT) bin (w = w_uncor(a_i(log(pT)-m_i)+e_i)/e_i, but w_uncor = e_i, see l0_global_tis_highpT_adhoc_correction.py for notation)
+      std::cout << "...correcting L0 Global TIS measurement for high B log(pT)..." << std::endl;
       vector<float> adhoc = ADHOC_DSTMUNU_HIGHPT_CORRECTION[year][binPZ];
       return adhoc[2]*(TMath::Log(PT)-adhoc[0])+adhoc[1];
     }
