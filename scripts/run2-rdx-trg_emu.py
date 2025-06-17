@@ -68,6 +68,8 @@ enable debug mode.
 if __name__ == '__main__':
     args = parse_input()
 
+    if args.adhoc_tis_correction: print(f'Note: using ad-hoc correction for L0 Global TIS measurement at high B log(pT)')
+
     # L0Global TIS
     directives = run2_rdx_l0_global_tis_directive_gen(args.Bmeson, args.year, args.adhoc_tis_correction)
     # HLT 1

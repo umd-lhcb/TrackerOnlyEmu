@@ -50,7 +50,7 @@ XGB_TRAIN_BRANCHES = [
 #################
 # Main #########################################################################
 
-def run2_rdx_l0_global_tis_directive_gen(Bmeson, year, adhoc_tis_correction):
+def run2_rdx_l0_global_tis_directive_gen(Bmeson, year, adhoc_tis_correction=True):
     load_cpp('<triggers/l0/run2-L0GlobalTIS.h>')
 
     gInterpreter.Declare('auto histoResp = new TFile("{}");'.format(
@@ -68,10 +68,10 @@ def run2_rdx_l0_global_tis_directive_gen(Bmeson, year, adhoc_tis_correction):
         EXEC('Define', '{}_pt'.format(Bmeson),
              '{}_TRUEPT'.format(Bmeson), True),
         EXEC('Define', '{}_l0_global_tis_emu'.format(Bmeson),
-             'l0GlobalTisTriggerEmu({}, {}, {}, hResp)'.format(
+             'l0GlobalTisTriggerEmu({}, {}, {}, hResp, {})'.format(
                  '{}_pz'.format(Bmeson),
                  '{}_pt'.format(Bmeson),
-                 year, adhoc_tis_correction), True),
+                 year, str(adhoc_tis_correction).lower()), True),
     ]
 
 

@@ -39,6 +39,8 @@ specify tree name.
 
     parser.add_argument('-y', '--year', default='2016', help='''
 specify year.''')
+    
+    parser.add_argument('-c', '--adhoc_tis_correction', action='store_true', help='specify if ad-hoc L0 Global TIS correction at high B pT should be used')
 
     parser.add_argument('-B', '--Bmeson', default='b0', help='''
 specify the name of the B meson in the tree.''')
@@ -57,7 +59,9 @@ enable debug mode.
 if __name__ == '__main__':
     args = parse_input()
 
-    directives = run2_rdx_l0_global_tis_directive_gen(args.Bmeson, args.year)
+    if args.adhoc_tis_correction: print(f'Note: using ad-hoc correction for L0 Global TIS measurement at high B log(pT)')
+
+    directives = run2_rdx_l0_global_tis_directive_gen(args.Bmeson, args.year, args.adhoc_tis_correction)
 
     directives_debug = [
         # Reference variables
