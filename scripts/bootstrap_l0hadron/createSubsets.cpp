@@ -69,7 +69,7 @@ int main(int argc, char** argv)
     const std::string inputPath = (argc > 1) ? argv[1] : "/home/rishabh/lhcb-ntuples-gen/ntuples/0.9.4-trigger_emulation/Dst_D0-mc/Dst_D0--21_04_21--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_11574021_D0TAUNU.SAFESTRIPTRIG.DST.root";
 
     //Hyperparameters
-    constexpr int numSubsets = 50;
+    constexpr int numSubsets = 100;
     constexpr double trainFrac = 0.5;
     constexpr bool resample = true;
 
