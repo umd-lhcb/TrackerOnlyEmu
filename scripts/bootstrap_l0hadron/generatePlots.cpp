@@ -7,6 +7,8 @@
 #include "TTreeReader.h"
 #include "TTreeReaderValue.h"
 #include "TLegend.h"
+#include "TEfficiency.h"
+#include "TGraphAsymmErrors.h"
 #include "TGraphErrors.h"
 #include <experimental/filesystem>
 #include <iostream>
@@ -184,6 +186,7 @@ int main()
 
     std::vector<RunningStats> realStats(numBins);
     std::vector<RunningStats> emuStats(numBins);
+    std::vector<RunningStats> denomStats(numBins);
     for(const auto& path : files)
     {
         std::unique_ptr<TFile> file(TFile::Open(path.c_str(), "READ"));
@@ -193,14 +196,16 @@ int main()
         auto realEff = efficiencyHist(h.realNum, h.denom, "hRealEff");
         auto emuEff = efficiencyHist(h.emuNum, h.denom, "hEmuEff");
 
-        const auto stem = fs::path(path).stem().string();
-        savePerFilePlot(plotDir + "/" + stem + "_eff.png", *realEff, *emuEff);
+        //Extra code to generate per-subset plots
+        // const auto stem = fs::path(path).stem().string();
+        // savePerFilePlot(plotDir + "/" + stem + "_eff.png", *realEff, *emuEff);
 
         for(int bin = 1; bin <= numBins; bin++)
         {
             const double total = h.denom.GetBinContent(bin);
             if(total <= 0.0) continue;
 
+            denomStats[bin - 1].add(total);
             realStats[bin - 1].add(realEff->GetBinContent(bin));
             emuStats[bin - 1].add(emuEff->GetBinContent(bin));
         }
@@ -211,28 +216,40 @@ int main()
     std::vector<double> x;
     std::vector<double> ex;
     std::vector<double> yReal;
-    std::vector<double> eReal;
+    std::vector<double> eRealLow;
+    std::vector<double> eRealHigh;
     std::vector<double> yEmu;
     std::vector<double> eEmu;
     x.reserve(numBins);
     ex.reserve(numBins);
     yReal.reserve(numBins);
-    eReal.reserve(numBins);
+    eRealLow.reserve(numBins);
+    eRealHigh.reserve(numBins);
     yEmu.reserve(numBins);
     eEmu.reserve(numBins);
 
+    constexpr double clopperPearsonLevel = 0.6827;
     for(int bin = 1; bin <= numBins; bin++)
     {
         const double low = axis.GetBinLowEdge(bin);
         const double high = low + axis.GetBinWidth(bin);
         const auto& rs = realStats[bin - 1];
         const auto& es = emuStats[bin - 1];
+        const auto& ds = denomStats[bin - 1];
 
         if(rs.n == 0 && es.n == 0) continue;
+        if(ds.n == 0) continue;
+        const int nEff = std::max(0, static_cast<int>(std::lround(ds.mean)));
+        if(nEff == 0) continue;
+        const int kEff = std::min(nEff, std::max(0, static_cast<int>(std::lround(rs.mean * nEff))));
+        const double cpLow = TEfficiency::ClopperPearson(nEff, kEff, clopperPearsonLevel, false);
+        const double cpHigh = TEfficiency::ClopperPearson(nEff, kEff, clopperPearsonLevel, true);
+
         x.push_back(axis.GetBinCenter(bin));
         ex.push_back(0.0);
         yReal.push_back(rs.mean);
-        eReal.push_back(rs.sd());
+        eRealLow.push_back(std::max(0.0, rs.mean - cpLow));
+        eRealHigh.push_back(std::max(0.0, cpHigh - rs.mean));
         yEmu.push_back(es.mean);
         eEmu.push_back(es.sd());
     }
@@ -246,7 +263,7 @@ int main()
     axis.SetMaximum(1.05);
     axis.Draw("AXIS");
 
-    auto* grReal = new TGraphErrors(static_cast<int>(x.size()), x.data(), yReal.data(), ex.data(), eReal.data());
+    auto* grReal = new TGraphAsymmErrors(static_cast<int>(x.size()), x.data(), yReal.data(), ex.data(), ex.data(), eRealLow.data(), eRealHigh.data());
     auto* grEmu = new TGraphErrors(static_cast<int>(x.size()), x.data(), yEmu.data(), ex.data(), eEmu.data());
     grReal->SetLineColor(kBlack);
     grReal->SetLineWidth(2);
