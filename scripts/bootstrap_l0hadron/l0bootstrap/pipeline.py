@@ -20,6 +20,7 @@ STEPS = (
     "xgb-weights",
     "train-test",
     "real-validation",
+    "emu-validation",
     "plot",
 )
 
@@ -45,6 +46,8 @@ class Pipeline:
             self.train_test_bootstrap()
         if step in ("all", "real-validation"):
             self.real_validation_inputs()
+        if step in ("all", "emu-validation"):
+            self.emu_validation_bootstrap()
         if step in ("all", "plot"):
             self.plot()
 
@@ -151,10 +154,27 @@ class Pipeline:
                 self.config.seed + 20_000 + index,
             )
 
+    def emu_validation_bootstrap(self):
+        self._require(self.paths.central_model, "central XGB model")
+        self._require(self.paths.test, "fixed test split")
+        self.real_validation_inputs()
+        for index in self._bootstrap_range():
+            test_file = self.paths.bootstrap_test(index)
+            output_file = self.paths.emu_validation_output(index)
+            apply_xgb(
+                test_file,
+                self.config.tree,
+                self.paths.central_model,
+                output_file,
+                self.config.year,
+                self.force,
+            )
+
     def plot(self):
         self._require(self.paths.central_output, "central output")
         xgb_weight_outputs = self._existing(self.paths.xgb_weight_output)
         train_test_outputs = self._existing(self.paths.train_test_output)
+        emu_validation_outputs = self._existing(self.paths.emu_validation_output)
         test_bootstraps = self._existing(self.paths.bootstrap_test)
 
         for branch in self.config.branches:
@@ -234,6 +254,24 @@ class Pipeline:
                     branch,
                     real_eff=central_real,
                     real_error=real_validation_error,
+                )
+
+            if self._plot_kind_enabled("emu-validation") and emu_validation_outputs:
+                _, emu_validation_error = bootstrap_errors(
+                    bootstrap_efficiencies(
+                        emu_validation_outputs,
+                        self.config.tree,
+                        branch,
+                        "d0_l0_hadron_tos_emu_xgb",
+                    )
+                )
+                efficiency_plot(
+                    self.paths.plots / f"{branch.name}_emu_validation_uncertainty.png",
+                    "Emulated validation bootstrap",
+                    branch,
+                    central_real,
+                    central_emu,
+                    emu_error=emu_validation_error,
                 )
 
         if self._plot_kind_enabled("2d"):

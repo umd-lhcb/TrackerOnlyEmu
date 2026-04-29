@@ -26,6 +26,7 @@ class RunPaths:
         self.train_test_models = self.models / "train_test_bootstrap"
         self.xgb_weight_outputs = self.outputs / "xgb_weight_bootstrap"
         self.train_test_outputs = self.outputs / "train_test_bootstrap"
+        self.emu_validation_outputs = self.outputs / "emu_validation_bootstrap"
 
     def mkdirs(self):
         for path in (
@@ -38,6 +39,7 @@ class RunPaths:
             self.train_test_models,
             self.xgb_weight_outputs,
             self.train_test_outputs,
+            self.emu_validation_outputs,
         ):
             path.mkdir(parents=True, exist_ok=True)
 
@@ -58,3 +60,6 @@ class RunPaths:
 
     def train_test_output(self, index):
         return self.train_test_outputs / f"test_train_test_{index:04d}.root"
+
+    def emu_validation_output(self, index):
+        return self.emu_validation_outputs / f"test_emu_validation_{index:04d}.root"

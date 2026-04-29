@@ -16,6 +16,7 @@ STEPS = (
     "xgb-weights",
     "train-test",
     "real-validation",
+    "emu-validation",
     "plot",
 )
 
@@ -40,7 +41,7 @@ def parse_args():
     parser.add_argument(
         "--plot-kind",
         action="append",
-        choices=("xgb-weights", "train-test", "real-validation", "ratio", "2d"),
+        choices=("xgb-weights", "train-test", "real-validation", "emu-validation", "ratio", "2d"),
         help="Limit --step plot to one plot family. Repeat for multiple families.",
     )
     parser.add_argument(
