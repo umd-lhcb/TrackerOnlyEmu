@@ -45,7 +45,16 @@ def _graph_asymm(eff, color, marker, yerr=None):
     return graph
 
 
-def efficiency_plot(path, title, branch, real_eff=None, emu_eff=None, emu_error=None, real_error=None):
+def efficiency_plot(
+    path,
+    title,
+    branch,
+    real_eff=None,
+    emu_eff=None,
+    emu_error=None,
+    real_error=None,
+    real_validation_error=None,
+):
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -71,8 +80,14 @@ def efficiency_plot(path, title, branch, real_eff=None, emu_eff=None, emu_error=
     if real_eff is not None:
         real_graph = _graph_asymm(real_eff, ROOT.kBlack, 20, real_error)
         real_graph.Draw("E1P SAME")
-        legend.AddEntry(real_graph, "Real response", "lep")
+        real_label = "Real response (CP)" if real_validation_error is not None else "Real response"
+        legend.AddEntry(real_graph, real_label, "lep")
         objects.append(real_graph)
+    if real_eff is not None and real_validation_error is not None:
+        real_validation_graph = _graph_asymm(real_eff, ROOT.kAzure + 2, 24, real_validation_error)
+        real_validation_graph.Draw("E1P SAME")
+        legend.AddEntry(real_validation_graph, "Real validation bootstrap", "lep")
+        objects.append(real_validation_graph)
     if emu_eff is not None:
         emu_graph = _graph_asymm(emu_eff, ROOT.kRed + 1, 21, emu_error)
         emu_graph.Draw("E1P SAME")
@@ -116,6 +131,86 @@ def ratio_plot(path, branch, x, ratio_values):
     graph.SetLineWidth(2)
     graph.Draw("P SAME")
     canvas.SaveAs(str(path))
+
+
+def bootstrap_distribution_plot(path, branch, bin_index, values, central_value, bootstrap_mean):
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    values = np.asarray(values, dtype=float)
+    values = values[np.isfinite(values)]
+
+    edges = np.linspace(branch.x_min, branch.x_max, branch.bins + 1)
+    low_edge = edges[bin_index]
+    high_edge = edges[bin_index + 1]
+    references = np.asarray([central_value, bootstrap_mean], dtype=float)
+    finite_references = references[np.isfinite(references)]
+    plot_values = np.concatenate((values, finite_references))
+    if plot_values.size == 0:
+        return
+
+    x_min = max(0.0, float(np.min(plot_values)))
+    x_max = min(1.0, float(np.max(plot_values)))
+    if x_min == x_max:
+        pad = 0.02
+    else:
+        pad = max(0.01, 0.12 * (x_max - x_min))
+    x_min = max(0.0, x_min - pad)
+    x_max = min(1.0, x_max + pad)
+    if x_min == x_max:
+        x_max = min(1.0, x_min + 0.02)
+
+    canvas = ROOT.TCanvas(
+        f"c_bootstrap_distribution_{bin_index}",
+        f"c_bootstrap_distribution_{bin_index}",
+        850,
+        600,
+    )
+    canvas.SetGrid()
+    hist = ROOT.TH1D(
+        f"h_bootstrap_distribution_{bin_index}",
+        (
+            f"Train/test bootstrap distribution, {branch.name} "
+            f"[{low_edge:g}, {high_edge:g});Efficiency;Bootstrap samples"
+        ),
+        min(30, max(10, values.size // 3)),
+        x_min,
+        x_max,
+    )
+    hist.SetLineColor(ROOT.kRed + 1)
+    hist.SetFillColorAlpha(ROOT.kRed - 9, 0.35)
+    hist.SetLineWidth(2)
+    for value in values:
+        hist.Fill(float(value))
+    hist.Draw("HIST")
+
+    y_max = hist.GetMaximum() * 1.12
+    hist.SetMaximum(y_max if y_max > 0 else 1.0)
+
+    legend = ROOT.TLegend(0.60, 0.72, 0.88, 0.88)
+    legend.SetBorderSize(0)
+    legend.AddEntry(hist, "Bootstrap efficiencies", "f")
+    objects = [hist, legend]
+
+    if np.isfinite(central_value):
+        central_line = ROOT.TLine(float(central_value), 0.0, float(central_value), hist.GetMaximum())
+        central_line.SetLineColor(ROOT.kBlack)
+        central_line.SetLineWidth(3)
+        central_line.Draw("SAME")
+        legend.AddEntry(central_line, "Central estimate", "l")
+        objects.append(central_line)
+
+    if np.isfinite(bootstrap_mean):
+        mean_line = ROOT.TLine(float(bootstrap_mean), 0.0, float(bootstrap_mean), hist.GetMaximum())
+        mean_line.SetLineColor(ROOT.kAzure + 2)
+        mean_line.SetLineWidth(3)
+        mean_line.SetLineStyle(2)
+        mean_line.Draw("SAME")
+        legend.AddEntry(mean_line, "Bootstrap mean", "l")
+        objects.append(mean_line)
+
+    legend.Draw()
+    canvas.SaveAs(str(path))
+    return objects
 
 
 def _hist2d(name, title, values, x_edges, y_edges):

@@ -8,11 +8,22 @@ import yaml
 
 DEFAULT_BRANCH_RANGES = {
     "d0_pt": {"x_min": 0.0, "x_max": 20.0, "y_min": 0.0, "y_max": 0.95},
+    "d0_p": {"x_min": 0.0, "x_max": 500.0, "y_min": 0.0, "y_max": 0.95},
     "q2": {"x_min": -5.0, "x_max": 15.0, "y_min": 0.14, "y_max": 0.27},
     "mmiss2": {"x_min": -5.0, "x_max": 15.0, "y_min": 0.0, "y_max": 1.0},
     "el": {"x_min": 0.0, "x_max": 4.0, "y_min": 0.1, "y_max": 0.45},
     "nspdhits": {"x_min": 0.0, "x_max": 700.0, "y_min": 0.0, "y_max": 0.32},
 }
+
+DEFAULT_2D_PAIRS = (
+    ("d0_pt", "q2"),
+    ("d0_pt", "mmiss2"),
+    ("d0_pt", "el"),
+    ("d0_pt", "nspdhits"),
+    ("d0_p", "d0_pt"),
+    ("mmiss2", "q2"),
+    ("mmiss2", "el"),
+)
 
 
 @dataclass(frozen=True)
@@ -30,6 +41,7 @@ class BootstrapConfig:
     input_path: Path
     tag: str
     branches: tuple[BranchConfig, ...]
+    two_dimensional_pairs: tuple[tuple[BranchConfig, BranchConfig], ...]
     n_bootstraps: int = 100
     train_fraction: float = 0.5
     seed: int = 12345
@@ -64,6 +76,18 @@ def _branch_config(name, ranges, default_bins):
     )
 
 
+def _pair_names(raw):
+    pairs = _coalesce(raw, "two_dimensional_pairs", "two-dimensional-pairs", default=DEFAULT_2D_PAIRS)
+    out = []
+    for pair in pairs:
+        if isinstance(pair, str):
+            left, right = pair.split(":", 1)
+        else:
+            left, right = pair
+        out.append((str(left), str(right)))
+    return tuple(out)
+
+
 def load_config(path):
     config_path = Path(path)
     with config_path.open() as config_file:
@@ -79,11 +103,19 @@ def load_config(path):
     default_bins = int(raw.get("num_bins", raw.get("bins", 20)))
     ranges = _coalesce(raw, "plot_ranges", "plot-ranges", default={})
     branches = tuple(_branch_config(name, ranges, default_bins) for name in branch_names)
+    two_dimensional_pairs = tuple(
+        (
+            _branch_config(x_name, ranges, default_bins),
+            _branch_config(y_name, ranges, default_bins),
+        )
+        for x_name, y_name in _pair_names(raw)
+    )
 
     return BootstrapConfig(
         input_path=Path(raw["input"]).expanduser(),
         tag=str(raw.get("tag", "l0hadron")),
         branches=branches,
+        two_dimensional_pairs=two_dimensional_pairs,
         n_bootstraps=int(_coalesce(raw, "n_bootstraps", "num_subsets", "num-subsets", default=100)),
         train_fraction=float(_coalesce(raw, "train_fraction", "train_frac", "train-frac", default=0.5)),
         seed=int(raw.get("seed", 12345)),

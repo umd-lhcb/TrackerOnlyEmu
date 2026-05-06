@@ -1,8 +1,10 @@
 from pathlib import Path
 
+import numpy as np
+
 from .model import apply_xgb, train_xgb
 from .paths import RunPaths
-from .plotting import efficiency2d_plot, efficiency_plot, ratio_plot
+from .plotting import bootstrap_distribution_plot, efficiency2d_plot, efficiency_plot, ratio_plot
 from .root_io import write_bootstrap_sample, write_initial_split
 from .stats import (
     bootstrap_efficiencies,
@@ -177,136 +179,180 @@ class Pipeline:
         emu_validation_outputs = self._existing(self.paths.emu_validation_output)
         test_bootstraps = self._existing(self.paths.bootstrap_test)
 
-        for branch in self.config.branches:
-            if not self._plot_branch_enabled(branch.name):
-                continue
-            central_real = efficiency(
-                self.paths.central_output,
-                self.config.tree,
-                branch,
-                "d0_l0_hadron_tos",
-                clopper_pearson=True,
-            )
-            central_emu = efficiency(
-                self.paths.central_output,
-                self.config.tree,
-                branch,
-                "d0_l0_hadron_tos_emu_xgb",
-            )
-
-            if self._plot_kind_enabled("xgb-weights") and xgb_weight_outputs:
-                _, xgb_weight_error = bootstrap_errors(
-                    bootstrap_efficiencies(
-                        xgb_weight_outputs,
-                        self.config.tree,
-                        branch,
-                        "d0_l0_hadron_tos_emu_xgb",
-                    )
-                )
-                efficiency_plot(
-                    self.paths.plots / f"{branch.name}_xgb_weight_uncertainty.png",
-                    "XGB weight bootstrap",
+        if self._plot_1d_enabled():
+            for branch in self.config.branches:
+                if not self._plot_branch_enabled(branch.name):
+                    continue
+                central_real = efficiency(
+                    self.paths.central_output,
+                    self.config.tree,
                     branch,
-                    central_real,
-                    central_emu,
-                    emu_error=xgb_weight_error,
+                    "d0_l0_hadron_tos",
+                    clopper_pearson=True,
                 )
-
-            if (self._plot_kind_enabled("train-test") or self._plot_kind_enabled("ratio")) and train_test_outputs:
-                train_test_mean, train_test_error = bootstrap_errors(
-                    bootstrap_efficiencies(
-                        train_test_outputs,
-                        self.config.tree,
-                        branch,
-                        "d0_l0_hadron_tos_emu_xgb",
+                central_emu = efficiency(
+                    self.paths.central_output,
+                    self.config.tree,
+                    branch,
+                    "d0_l0_hadron_tos_emu_xgb",
+                )
+                real_validation_error = None
+                if self._real_validation_overlay_enabled() and test_bootstraps:
+                    _, real_validation_error = bootstrap_errors(
+                        bootstrap_efficiencies(
+                            test_bootstraps,
+                            self.config.tree,
+                            branch,
+                            "d0_l0_hadron_tos",
+                        )
                     )
-                )
-                if self._plot_kind_enabled("train-test"):
+
+                if self._plot_kind_enabled("xgb-weights") and xgb_weight_outputs:
+                    _, xgb_weight_error = bootstrap_errors(
+                        bootstrap_efficiencies(
+                            xgb_weight_outputs,
+                            self.config.tree,
+                            branch,
+                            "d0_l0_hadron_tos_emu_xgb",
+                        )
+                    )
                     efficiency_plot(
-                        self.paths.plots / f"{branch.name}_train_test_uncertainty.png",
-                        "Train and test bootstrap",
+                        self.paths.plots / f"{branch.name}_xgb_weight_uncertainty.png",
+                        "XGB weight bootstrap",
                         branch,
                         central_real,
                         central_emu,
-                        emu_error=train_test_error,
+                        emu_error=xgb_weight_error,
+                        real_validation_error=real_validation_error,
                     )
 
-                if branch.name == "d0_pt" and self._plot_kind_enabled("ratio"):
-                    ratio_plot(
-                        self.paths.plots / "d0_pt_train_test_bootstrap_ratio.png",
+                if (self._plot_kind_enabled("train-test") or self._plot_kind_enabled("ratio")) and train_test_outputs:
+                    train_test_mean, train_test_error = bootstrap_errors(
+                        bootstrap_efficiencies(
+                            train_test_outputs,
+                            self.config.tree,
+                            branch,
+                            "d0_l0_hadron_tos_emu_xgb",
+                        )
+                    )
+                    if self._plot_kind_enabled("train-test"):
+                        efficiency_plot(
+                            self.paths.plots / f"{branch.name}_train_test_uncertainty.png",
+                            "Train and test bootstrap",
+                            branch,
+                            central_real,
+                            central_emu,
+                            emu_error=train_test_error,
+                            real_validation_error=real_validation_error,
+                        )
+
+                    if branch.name == "d0_pt" and self._plot_kind_enabled("ratio"):
+                        ratio_plot(
+                            self.paths.plots / "d0_pt_train_test_bootstrap_ratio.png",
+                            branch,
+                            central_emu.x,
+                            ratio(train_test_mean, central_emu.y),
+                        )
+
+                if self._plot_kind_enabled("real-validation") and real_validation_error is not None:
+                    efficiency_plot(
+                        self.paths.plots / f"{branch.name}_real_validation_uncertainty.png",
+                        "Real-response validation bootstrap",
                         branch,
-                        central_emu.x,
-                        ratio(train_test_mean, central_emu.y),
+                        real_eff=central_real,
+                        real_error=real_validation_error,
                     )
 
-            if self._plot_kind_enabled("real-validation") and test_bootstraps:
-                _, real_validation_error = bootstrap_errors(
-                    bootstrap_efficiencies(
-                        test_bootstraps,
-                        self.config.tree,
-                        branch,
-                        "d0_l0_hadron_tos",
+                if self._plot_kind_enabled("emu-validation") and emu_validation_outputs:
+                    _, emu_validation_error = bootstrap_errors(
+                        bootstrap_efficiencies(
+                            emu_validation_outputs,
+                            self.config.tree,
+                            branch,
+                            "d0_l0_hadron_tos_emu_xgb",
+                        )
                     )
-                )
-                efficiency_plot(
-                    self.paths.plots / f"{branch.name}_real_validation_uncertainty.png",
-                    "Real-response validation bootstrap",
-                    branch,
-                    real_eff=central_real,
-                    real_error=real_validation_error,
-                )
-
-            if self._plot_kind_enabled("emu-validation") and emu_validation_outputs:
-                _, emu_validation_error = bootstrap_errors(
-                    bootstrap_efficiencies(
-                        emu_validation_outputs,
-                        self.config.tree,
+                    efficiency_plot(
+                        self.paths.plots / f"{branch.name}_emu_validation_uncertainty.png",
+                        "Emulated validation bootstrap",
                         branch,
-                        "d0_l0_hadron_tos_emu_xgb",
+                        central_real,
+                        central_emu,
+                        emu_error=emu_validation_error,
+                        real_validation_error=real_validation_error,
                     )
-                )
-                efficiency_plot(
-                    self.paths.plots / f"{branch.name}_emu_validation_uncertainty.png",
-                    "Emulated validation bootstrap",
-                    branch,
-                    central_real,
-                    central_emu,
-                    emu_error=emu_validation_error,
-                )
 
         if self._plot_kind_enabled("2d"):
             self._plot_2d_central_values()
+        if self._plot_kind_enabled("bootstrap-distributions"):
+            self._plot_bootstrap_distributions(train_test_outputs)
+
+    def _plot_bootstrap_distributions(self, train_test_outputs):
+        if not train_test_outputs:
+            return
+        branch = self._branch("d0_pt")
+        if branch is None or not self._plot_branch_enabled(branch.name):
+            return
+
+        central_emu = efficiency(
+            self.paths.central_output,
+            self.config.tree,
+            branch,
+            "d0_l0_hadron_tos_emu_xgb",
+        )
+        samples = bootstrap_efficiencies(
+            train_test_outputs,
+            self.config.tree,
+            branch,
+            "d0_l0_hadron_tos_emu_xgb",
+        )
+        if samples.size == 0:
+            return
+
+        populated = (
+            np.isfinite(central_emu.y)
+            & (central_emu.denominator > 0)
+            & (np.sum(np.isfinite(samples), axis=0) > 0)
+        )
+        bin_indexes = np.flatnonzero(populated)
+        if bin_indexes.size == 0:
+            return
+
+        selected = (("low", int(bin_indexes[0])), ("high", int(bin_indexes[-1])))
+        for label, bin_index in dict(selected).items():
+            bootstrap_distribution_plot(
+                self.paths.plots / f"{branch.name}_bootstrap_distribution_{label}.png",
+                branch,
+                bin_index,
+                samples[:, bin_index],
+                central_emu.y[bin_index],
+                np.nanmean(samples[:, bin_index]),
+            )
 
     def _plot_2d_central_values(self):
-        branches = {branch.name: branch for branch in self.config.branches}
-        d0_pt = branches.get("d0_pt")
-        if d0_pt is None:
-            return
-        for branch in self.config.branches:
-            if branch.name == "d0_pt":
-                continue
-            if not self._plot_branch_enabled(branch.name):
+        for x_branch, y_branch in self.config.two_dimensional_pairs:
+            if not self._plot_pair_enabled(x_branch.name, y_branch.name):
                 continue
             real_eff = efficiency2d(
                 self.paths.central_output,
                 self.config.tree,
-                d0_pt,
-                branch,
+                x_branch,
+                y_branch,
                 "d0_l0_hadron_tos",
                 self.config.two_dimensional_bins,
             )
             emu_eff = efficiency2d(
                 self.paths.central_output,
                 self.config.tree,
-                d0_pt,
-                branch,
+                x_branch,
+                y_branch,
                 "d0_l0_hadron_tos_emu_xgb",
                 self.config.two_dimensional_bins,
             )
             efficiency2d_plot(
-                self.paths.plots / f"d0_pt_vs_{branch.name}_central_efficiency_2d.png",
-                d0_pt,
-                branch,
+                self.paths.plots / f"{x_branch.name}_vs_{y_branch.name}_central_efficiency_2d.png",
+                x_branch,
+                y_branch,
                 real_eff,
                 emu_eff,
             )
@@ -314,8 +360,31 @@ class Pipeline:
     def _plot_kind_enabled(self, name):
         return not self.plot_kinds or name in self.plot_kinds
 
+    def _plot_1d_enabled(self):
+        one_dimensional = {
+            "xgb-weights",
+            "train-test",
+            "real-validation",
+            "emu-validation",
+            "ratio",
+        }
+        return not self.plot_kinds or bool(self.plot_kinds & one_dimensional)
+
+    def _real_validation_overlay_enabled(self):
+        kinds_with_overlay = {"xgb-weights", "train-test", "real-validation", "emu-validation"}
+        return not self.plot_kinds or bool(self.plot_kinds & kinds_with_overlay)
+
     def _plot_branch_enabled(self, name):
         return not self.plot_branches or name in self.plot_branches
+
+    def _plot_pair_enabled(self, x_name, y_name):
+        return not self.plot_branches or x_name in self.plot_branches or y_name in self.plot_branches
+
+    def _branch(self, name):
+        for branch in self.config.branches:
+            if branch.name == name:
+                return branch
+        return None
 
     def _write_bootstrap_train_samples(self):
         for index in self._bootstrap_range():
