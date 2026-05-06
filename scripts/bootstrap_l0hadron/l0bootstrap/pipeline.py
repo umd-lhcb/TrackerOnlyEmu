@@ -257,10 +257,10 @@ class Pipeline:
                 if self._plot_kind_enabled("real-validation") and real_validation_error is not None:
                     efficiency_plot(
                         self.paths.plots / f"{branch.name}_real_validation_uncertainty.png",
-                        "Real-response validation bootstrap",
+                        "Real validation bootstrap vs. Clopper-Pearson",
                         branch,
                         real_eff=central_real,
-                        real_error=real_validation_error,
+                        real_validation_error=real_validation_error,
                     )
 
                 if self._plot_kind_enabled("emu-validation") and emu_validation_outputs:
@@ -371,7 +371,12 @@ class Pipeline:
         return not self.plot_kinds or bool(self.plot_kinds & one_dimensional)
 
     def _real_validation_overlay_enabled(self):
-        kinds_with_overlay = {"xgb-weights", "train-test", "real-validation", "emu-validation"}
+        kinds_with_overlay = {
+            "xgb-weights",
+            "train-test",
+            "real-validation",
+            "emu-validation",
+        }
         return not self.plot_kinds or bool(self.plot_kinds & kinds_with_overlay)
 
     def _plot_branch_enabled(self, name):
