@@ -4,6 +4,7 @@
 # License: BSD 2-clause
 # Last Change: Wed Dec 15, 2021 at 06:08 PM +0100
 
+import json
 from itertools import combinations
 from ROOT import gInterpreter
 
@@ -61,18 +62,27 @@ def run2_rdx_l0_global_tis_directive_gen(Bmeson, year, adhoc_tis_correction=True
     '''
     gInterpreter.Declare(epilogue)
 
+    for name, filename in [('hTisNTracksCorrection', 'l0_tis_ntracks_correction.root'), ('hNspd450Efficiency', 'nspdlt450_ntracks.root')]:
+        path = load_file('<triggers/l0/' + filename + '>')
+        gInterpreter.Declare('auto ' + name + ' = readL0NTracksCorrection(' + json.dumps(str(path)) + ');')
+    nominal = '{}_l0_global_tis_emu'.format(Bmeson)
+    corrections = [
+        EXEC('Define', nominal + '_ntracks_corrected', nominal + ' * l0NTracksCorrection(nTracks, hTisNTracksCorrection)', True),
+        EXEC('Define', 'nspdlt450_eff', 'l0NTracksCorrection(nTracks, hNspd450Efficiency)', True),
+    ]
+
     # NOTE: For RDX, we use TRUE B momentum due to missing neutrinos
     if not ntracks: return [
         EXEC('Define', '{}_pz'.format(Bmeson), '{}_TRUEP_Z'.format(Bmeson), True),
         EXEC('Define', '{}_pt'.format(Bmeson), '{}_TRUEPT'.format(Bmeson), True),
         EXEC('Define', '{}_l0_global_tis_emu'.format(Bmeson), 'l0GlobalTisTriggerEmu({}, {}, {}, hResp, {})'.format('{}_pz'.format(Bmeson), '{}_pt'.format(Bmeson), year, str(adhoc_tis_correction).lower()), True),
-    ]
+    ] + corrections
     else: return [
         EXEC('Define', '{}_pz'.format(Bmeson), '{}_TRUEP_Z'.format(Bmeson), True),
         EXEC('Define', '{}_pt'.format(Bmeson), '{}_TRUEPT'.format(Bmeson), True),
         EXEC('Define', 'ntracks', 'nTracks', True),
         EXEC('Define', '{}_l0_global_tis_emu'.format(Bmeson), 'l0GlobalTisTrigger3DEmu({}, {}, {}, {}, hResp, {})'.format('{}_pz'.format(Bmeson), '{}_pt'.format(Bmeson), 'ntracks', year, str(adhoc_tis_correction).lower()), True),
-    ]
+    ] + corrections
 
 
 #########

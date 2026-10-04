@@ -6,6 +6,9 @@
 #define _RUN2_L0_HADRON_
 
 #include <map>
+#include <cmath>
+#include <stdexcept>
+#include <TH1.h>
 
 #include <TFile.h>
 #include <TH2F.h>
@@ -41,6 +44,30 @@ map<int, TH2F*> readL0GlobalTisResp( TFile* ntp ) {
   }
 
   return resp;
+}
+
+TH1* readL0NTracksCorrection(const char* path) {
+  TFile file(path, "READ");
+  if (file.IsZombie()) throw std::runtime_error("Cannot open nTracks correction file");
+  auto input = dynamic_cast<TH1*>(file.Get("correction"));
+  if (!input || input->GetDimension() != 1)
+    throw std::runtime_error("Expected a one-dimensional correction histogram");
+  for (int bin = 0; bin <= input->GetNbinsX() + 1; ++bin) {
+    double value = input->GetBinContent(bin);
+    if (!std::isfinite(value) || value < 0)
+      throw std::runtime_error("Invalid nTracks correction bin content");
+  }
+  auto hist = static_cast<TH1*>(input->Clone());
+  hist->SetDirectory(nullptr);
+  return hist;
+}
+
+// Overflow also uses highest bin
+double l0NTracksCorrection(double nTracks, const TH1* hist) {
+  if (!std::isfinite(nTracks)) throw std::runtime_error("Nonfinite nTracks");
+  auto axis = hist->GetXaxis();
+  int bin = nTracks >= axis->GetXmax() ? hist->GetNbinsX() : axis->FindFixBin(nTracks);
+  return hist->GetBinContent(bin);
 }
 
 // returns a float- an eff/prob for passing B L0Global TIS, as measured using TISTOS method in JpsiK data

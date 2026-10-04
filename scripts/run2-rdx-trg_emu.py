@@ -95,9 +95,10 @@ if __name__ == '__main__':
         out_np[br] = out_np[br].astype(int)
 
     out_tmp = {k+'_tmp': v for k, v in out_np.items()}
-    # Add the L0Global TIS branch
+    # Preserve nominal TIS and both nTracks-based outputs.
     l0global_tis_br = f'{args.Bmeson}_l0_global_tis_emu'
-    out_tmp[l0global_tis_br] = get_df_vars(dfs[-1], l0global_tis_br)
+    l0global_brs = [l0global_tis_br, l0global_tis_br + '_ntracks_corrected', 'nspdlt450_eff']
+    out_tmp.update(dfs[-1].AsNumpy(columns=l0global_brs))
     # Add the L0Hadron TOS branch
     out_tmp['d0_l0_hadron_tos_emu'] = regressor.predict_proba(input_vars).T[1]
     out_df = ROOT.RDF.MakeNumpyDataFrame(out_tmp)
@@ -114,7 +115,7 @@ if __name__ == '__main__':
     # Output
     out_dfs, output_br_names = process_directives(directives_post, out_df)
     output_br_names.push_back('d0_l0_hadron_tos_emu')
-    output_br_names.push_back(l0global_tis_br)
+    for br in l0global_brs: output_br_names.push_back(br)
 
     output_opts = RSnapshotOptions()
     output_opts.fMode = 'UPDATE'
