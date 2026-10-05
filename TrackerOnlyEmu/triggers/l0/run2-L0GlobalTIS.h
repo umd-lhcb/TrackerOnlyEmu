@@ -62,7 +62,7 @@ TH1* readL0NTracksCorrection(const char* path) {
   return hist;
 }
 
-// Overflow also uses highest bin
+// Overflow uses highest bin eff. Used for both correction derived from FS Dstmunu (TIS boolean over measured eff, in ntracks bins with max at 600) and nspdhits<450 eff correction (in ntracks bins with max at 600)
 double l0NTracksCorrection(double nTracks, const TH1* hist) {
   if (!std::isfinite(nTracks)) throw std::runtime_error("Nonfinite nTracks");
   auto axis = hist->GetXaxis();
@@ -76,6 +76,7 @@ float l0GlobalTisTriggerEmu( double PZ, double PT, int year,
   auto hist = respHistos[year];
 
   // ad-hoc correction to mimic high log(pT) behavior seen in rdx fullsim MC, found in lhcb-ntuples-gen/scripts/l0_global_tis_highpT_adhoc_correction.py using D*+munu fullsim MC
+  // assumes measurement was made in 4 log(pz) bins (with bin boundaries as in the response histos)
   map<int, map<int, vector<float>>> ADHOC_DSTMUNU_HIGHPT_CORRECTION;
   ADHOC_DSTMUNU_HIGHPT_CORRECTION[2016][1] = {9.576293217377373, 0.38961711525917053, -0.04307553315370772}; // D*munu high log(pT) bin mean, eff from JpsiK data, slope correction
   ADHOC_DSTMUNU_HIGHPT_CORRECTION[2016][2] = {9.645412819275125, 0.40560808777809143, 0.1920121662958972};
@@ -91,8 +92,13 @@ float l0GlobalTisTriggerEmu( double PZ, double PT, int year,
   ADHOC_DSTMUNU_HIGHPT_CORRECTION[2018][4] = {9.807297853596634, 0.45863404870033264, 0.2866896902756077};
 
   if ( PZ > 0 ) {
+    // clamp log(pz), log(pt) using response histo first
     auto binPZ = hist->GetXaxis()->FindBin( TMath::Log( PZ ) );
+    if (binPZ==0) binPZ=1;
+    if (binPZ==5) binPZ=4;
     auto binPT = hist->GetYaxis()->FindBin( TMath::Log( PT ) );
+    if (binPT==0) binPT=1;
+    if (binPT==9) binPT=8; // assumes measurement made in 8 log(pt) bins
     if (adhoc_correction && binPT == hist->GetNbinsY()) { // only apply correction to high log(pT) bin (w = w_uncor(a_i(log(pT)-m_i)+e_i)/e_i, but w_uncor = e_i, see l0_global_tis_highpT_adhoc_correction.py for notation)
       // std::cout << "...correcting L0 Global TIS measurement for high B log(pT)..." << std::endl;
       vector<float> adhoc = ADHOC_DSTMUNU_HIGHPT_CORRECTION[year][binPZ];
