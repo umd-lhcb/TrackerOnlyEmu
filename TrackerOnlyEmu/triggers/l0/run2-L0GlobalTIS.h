@@ -62,12 +62,19 @@ TH1* readL0NTracksCorrection(const char* path) {
   return hist;
 }
 
-// Overflow uses highest bin eff. Used for both correction derived from FS Dstmunu (TIS boolean over measured eff, in ntracks bins with max at 600) and nspdhits<450 eff correction (in ntracks bins with max at 600)
+// Used for both correction derived from FS Dstmunu (TIS boolean over measured eff) and nspdhits<450 eff correction
+// Interpolate between bin centers; hold endpoint values outside that range
 double l0NTracksCorrection(double nTracks, const TH1* hist) {
   if (!std::isfinite(nTracks)) throw std::runtime_error("Nonfinite nTracks");
-  auto axis = hist->GetXaxis();
-  int bin = nTracks >= axis->GetXmax() ? hist->GetNbinsX() : axis->FindFixBin(nTracks);
-  return hist->GetBinContent(bin);
+
+  const auto axis = hist->GetXaxis();
+  const double first = axis->GetBinCenter(1);
+  const double last = axis->GetBinCenter(hist->GetNbinsX());
+
+  if (nTracks <= first) return hist->GetBinContent(1);
+  if (nTracks >= last) return hist->GetBinContent(hist->GetNbinsX());
+
+  return hist->Interpolate(nTracks);
 }
 
 // returns a float- an eff/prob for passing B L0Global TIS, as measured using TISTOS method in JpsiK data
