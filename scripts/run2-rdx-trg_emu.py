@@ -29,32 +29,16 @@ from TrackerOnlyEmu.emulation.run2_rdx import (
 #################################
 
 def parse_input():
-    parser = ArgumentParser(
-        description='Emulate all triggers for run 2 RDX.')
-
-    parser.add_argument('input', help='''
-specify input ntuple file.
-''')
-
-    parser.add_argument('output', help='''
-specify output ntuple file.
-''')
-
-    parser.add_argument('-t', '--tree', default='TupleB0/DecayTree', help='''
-specify tree name.
-''')
-
+    parser = ArgumentParser(description='Emulate all triggers for run 2 RDX.')
+    parser.add_argument('input', help='specify input ntuple file.')
+    parser.add_argument('output', help='specify output ntuple file.')
+    parser.add_argument('-t', '--tree', default='TupleB0/DecayTree', help='specify tree name.')
     parser.add_argument('-y', '--year', default='2016', help='specify year.')
-
     parser.add_argument('-c', '--adhoc_tis_correction', action='store_true', help='specify if ad-hoc L0 Global TIS correction at high B pT should be used')
-
     parser.add_argument('-n', '--ntracks', action='store_true', help='specify if L0 Global TIS eff should consider nTracks for val (3D=[log(pz),log(pt),nTracks])')
-
-    parser.add_argument('-B', '--Bmeson', default='b0', help='''
-specify the name of the B meson in the tree.''')
-
-    parser.add_argument('-l', '--load', default='<triggers/l0/xgb4-2016.pickle>', help='''
-specify the trained regressor to load.''')
+    parser.add_argument('-B', '--Bmeson', default='b0', help='specify the name of the B meson in the tree.')
+    parser.add_argument('-l', '--load', default='<triggers/l0/xgb4_nspd_corrected-2016.pickle>', help='specify the trained regressor to load.')
+    parser.add_argument('--load-nspd-uncorrected', default='<triggers/l0/xgb4-2016.pickle>', help='Also load this model and write d0_l0_hadron_tos_emu_nspd_uncorrected.')
 
     parser.add_argument('--debug', action='store_true', help='''
 enable debug mode.
@@ -101,6 +85,13 @@ if __name__ == '__main__':
     out_tmp.update(dfs[-1].AsNumpy(columns=l0global_brs))
     # Add the L0Hadron TOS branch
     out_tmp['d0_l0_hadron_tos_emu'] = regressor.predict_proba(input_vars).T[1]
+    l0hadron_brs = ['d0_l0_hadron_tos_emu']
+    if args.load_nspd_uncorrected:
+        with open(load_file(args.load_nspd_uncorrected), 'rb') as model_file:
+            uncorrected_regressor = pickle.load(model_file)
+        uncorrected_br = 'd0_l0_hadron_tos_emu_nspd_uncorrected'
+        out_tmp[uncorrected_br] = uncorrected_regressor.predict_proba(input_vars).T[1]
+        l0hadron_brs.append(uncorrected_br)
     out_df = ROOT.RDF.MakeNumpyDataFrame(out_tmp)
 
     directives_post = [
@@ -114,7 +105,7 @@ if __name__ == '__main__':
 
     # Output
     out_dfs, output_br_names = process_directives(directives_post, out_df)
-    output_br_names.push_back('d0_l0_hadron_tos_emu')
+    for br in l0hadron_brs: output_br_names.push_back(br)
     for br in l0global_brs: output_br_names.push_back(br)
 
     output_opts = RSnapshotOptions()
