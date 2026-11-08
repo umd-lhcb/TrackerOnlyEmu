@@ -62,13 +62,20 @@ def run2_rdx_l0_global_tis_directive_gen(Bmeson, year, adhoc_tis_correction=True
     '''
     gInterpreter.Declare(epilogue)
 
-    for name, filename in [('hTisNTracksCorrection', 'l0_tis_ntracks_correction.root'), ('hNspd450Efficiency', 'nspdlt450_ntracks.root')]:
+    if str(year) not in ('2016', '2017', '2018'):
+        raise ValueError(f'Unsupported L0 TIS correction year: {year}')
+    for name, filename in [
+        ('hTisNTracksCorrection', f'tisbool_ratio_wtis-ntracks-{year}.root'),
+        ('hTisNspd450Correction', f'tisbool_nspdlt450_ratio_wtis-ntracks-{year}.root'),
+        ('hNspd450Efficiency', f'nspdlt450_jk-ntracks-{year}.root'),
+    ]:
         path = load_file('<triggers/l0/' + filename + '>')
         gInterpreter.Declare('auto ' + name + ' = readL0NTracksCorrection(' + json.dumps(str(path)) + ');')
     nominal = '{}_l0_global_tis_emu'.format(Bmeson)
     corrections = [
-        EXEC('Define', nominal + '_ntracks_corrected', nominal + ' * l0NTracksCorrection(nTracks, hTisNTracksCorrection)', True),
-        EXEC('Define', 'nspdlt450_eff', 'l0NTracksCorrection(nTracks, hNspd450Efficiency)', True),
+        EXEC('Define', nominal + '_tisbool_ntr_ratio_wtis', nominal + ' * l0NTracksCorrection(nTracks, hTisNTracksCorrection)', True),
+        EXEC('Define', nominal + '_tisbool_nspdlt450_ntr_ratio_wtis', nominal + ' * l0NTracksCorrection(nTracks, hTisNspd450Correction)', True),
+        EXEC('Define', 'nspdlt450_ntr_eff', 'l0NTracksCorrection(nTracks, hNspd450Efficiency)', True),
     ]
 
     # NOTE: For RDX, we use TRUE B momentum due to missing neutrinos

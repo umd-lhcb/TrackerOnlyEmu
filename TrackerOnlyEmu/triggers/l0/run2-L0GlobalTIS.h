@@ -62,7 +62,7 @@ TH1* readL0NTracksCorrection(const char* path) {
   return hist;
 }
 
-// Used for both correction derived from FS Dstmunu (TIS boolean over measured eff) and nspdhits<450 eff correction
+// Used for both correction derived from FS Dstmunu (TIS boolean over measured eff) and nspdhits<450 eff correction (and the combination)
 // Interpolate between bin centers; hold endpoint values outside that range
 double l0NTracksCorrection(double nTracks, const TH1* hist) {
   if (!std::isfinite(nTracks)) throw std::runtime_error("Nonfinite nTracks");

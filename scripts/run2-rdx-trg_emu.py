@@ -79,9 +79,9 @@ if __name__ == '__main__':
         out_np[br] = out_np[br].astype(int)
 
     out_tmp = {k+'_tmp': v for k, v in out_np.items()}
-    # Preserve nominal TIS and both nTracks-based outputs.
+    # Preserve nominal TIS and the year-specific correction outputs.
     l0global_tis_br = f'{args.Bmeson}_l0_global_tis_emu'
-    l0global_brs = [l0global_tis_br, l0global_tis_br + '_ntracks_corrected', 'nspdlt450_eff']
+    l0global_brs = [l0global_tis_br, l0global_tis_br + '_tisbool_ntr_ratio_wtis', l0global_tis_br + '_tisbool_nspdlt450_ntr_ratio_wtis', 'nspdlt450_ntr_eff']
     out_tmp.update(dfs[-1].AsNumpy(columns=l0global_brs))
     # Add the L0Hadron TOS branch
     out_tmp['d0_l0_hadron_tos_emu'] = regressor.predict_proba(input_vars).T[1]
