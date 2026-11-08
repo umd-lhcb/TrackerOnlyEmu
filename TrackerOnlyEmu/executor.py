@@ -36,8 +36,7 @@ def process_directives(directives, init_frame):
         else:
             prev_frame = frames[-1]
 
-        cur_frame = process_single_directive(
-            getattr(prev_frame, d.op), d.branch, d.instruct)
+        cur_frame = process_single_directive(getattr(prev_frame, d.op), d.branch, d.instruct)
         frames.append(cur_frame)
 
         if d.keep:
