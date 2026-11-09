@@ -65,9 +65,9 @@ def run2_rdx_l0_global_tis_directive_gen(Bmeson, year, adhoc_tis_correction=True
     if str(year) not in ('2016', '2017', '2018'):
         raise ValueError(f'Unsupported L0 TIS correction year: {year}')
     for name, filename in [
-        ('hTisNTracksCorrection', f'tisbool_ratio_wtis-ntracks-{year}.root'),
+        ('hTisNTracksCorrection', f'tisbool_ratio_wtis-ntracks-nspdcorlt450-{year}.root'),
         # ('hTisNspd450Correction', f'tisbool_nspdlt450_ratio_wtis-ntracks-{year}.root'),
-        ('hNspd450Efficiency', f'nspdlt450_jk-ntracks-{year}.root'),
+        ('hNspd450Efficiency', f'nspdlt450_dstmunu-ntracks-{year}.root'),
     ]:
         path = load_file('<triggers/l0/' + filename + '>')
         gInterpreter.Declare('auto ' + name + ' = readL0NTracksCorrection(' + json.dumps(str(path)) + ');')

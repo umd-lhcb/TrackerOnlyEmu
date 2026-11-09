@@ -62,7 +62,7 @@ REGRESSOR_CONFIG['xgb'] = {
     ],
     'debug_brs': [
         'd0_l0_hadron_tos',
-        'd0_l0_hadron_tos_spd_corrected',
+        # 'd0_l0_hadron_tos_spd_corrected',
         'k_pt',
         'pi_pt',
         'd0_pt',
@@ -72,7 +72,7 @@ REGRESSOR_CONFIG['xgb'] = {
         'nspdhits',
         'q2', 'mmiss2', 'el'
     ],
-    'reg_br': 'd0_l0_hadron_tos_spd_corrected', # d0_l0_hadron_tos
+    'reg_br': 'd0_l0_hadron_tos', # d0_l0_hadron_tos_spd_corrected
     'prep': lambda: 0,
     'predict': lambda xgb, input_vars: {
         'd0_l0_hadron_tos_emu_xgb': xgb.predict_proba(input_vars).T[1],
