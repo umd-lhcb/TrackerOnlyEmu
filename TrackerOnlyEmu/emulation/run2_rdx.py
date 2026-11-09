@@ -66,7 +66,7 @@ def run2_rdx_l0_global_tis_directive_gen(Bmeson, year, adhoc_tis_correction=True
         raise ValueError(f'Unsupported L0 TIS correction year: {year}')
     for name, filename in [
         ('hTisNTracksCorrection', f'tisbool_ratio_wtis-ntracks-{year}.root'),
-        ('hTisNspd450Correction', f'tisbool_nspdlt450_ratio_wtis-ntracks-{year}.root'),
+        # ('hTisNspd450Correction', f'tisbool_nspdlt450_ratio_wtis-ntracks-{year}.root'),
         ('hNspd450Efficiency', f'nspdlt450_jk-ntracks-{year}.root'),
     ]:
         path = load_file('<triggers/l0/' + filename + '>')
@@ -74,7 +74,7 @@ def run2_rdx_l0_global_tis_directive_gen(Bmeson, year, adhoc_tis_correction=True
     nominal = '{}_l0_global_tis_emu'.format(Bmeson)
     corrections = [
         EXEC('Define', nominal + '_tisbool_ntr_ratio_wtis', nominal + ' * l0NTracksCorrection(nTracks, hTisNTracksCorrection)', True),
-        EXEC('Define', nominal + '_tisbool_nspdlt450_ntr_ratio_wtis', nominal + ' * l0NTracksCorrection(nTracks, hTisNspd450Correction)', True),
+        # EXEC('Define', nominal + '_tisbool_nspdlt450_ntr_ratio_wtis', nominal + ' * l0NTracksCorrection(nTracks, hTisNspd450Correction)', True),
         EXEC('Define', 'nspdlt450_ntr_eff', 'l0NTracksCorrection(nTracks, hNspd450Efficiency)', True),
     ]
 
