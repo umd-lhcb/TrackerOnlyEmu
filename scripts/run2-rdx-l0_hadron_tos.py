@@ -24,7 +24,9 @@ from TrackerOnlyEmu.executor import ExecDirective as EXEC
 from TrackerOnlyEmu.executor import process_directives
 from TrackerOnlyEmu.utils import Timer
 from TrackerOnlyEmu.utils import gen_output_dict, get_df_vars
-from TrackerOnlyEmu.emulation.run2_rdx import XGB_TRAIN_BRANCHES
+from TrackerOnlyEmu.emulation.run2_rdx import (
+    XGB_TRAIN_BRANCHES, run2_rdx_l0_hadron_tos_directive_gen,
+)
 
 
 #################
@@ -210,41 +212,17 @@ REGRESSOR_CONFIG['bdt_old']['dir'] = lambda args: [
 #################################
 
 def parse_input():
-    parser = ArgumentParser(
-        description='Train a regression BDT/XGB for a better emulation of L0Hadron TOS trigger.')
-
-    parser.add_argument('input', help='''
-specify input ntuple file.''')
-
-    parser.add_argument('output', help='''
-specify output ntuple file.''')
-
-    parser.add_argument('-t', '--tree', default='TupleB0/DecayTree', help='''
-specify tree name.''')
-
-    parser.add_argument('-y', '--year', default='2016', help='''
-specify year.''')
-
-    parser.add_argument('--debug', action='store_true', help='''
-enable debug mode.
-''')
-
-    parser.add_argument('-m', '--mode', choices=['bdt', 'xgb', 'bdt_old'],
-                        default='xgb', help='''
-specify which regressor to use.''')
-
-    parser.add_argument('--load', default=None, help='''
-optionally specify serialized BDT to load.''')
-
-    parser.add_argument('--dump', default=None, help='''
-optionally specify output to pickled BDT object.''')
-
-    parser.add_argument('--max-depth', default=4, type=int, help='''
-optionally specify the max_depth parameter for the BDT.''')
-
-    parser.add_argument('--ntrees', default=300, type=int, help='''
-optionally specify the n_estimators parameter for the BDT.''')
-
+    parser = ArgumentParser(description='Train a regression BDT/XGB for a better emulation of L0Hadron TOS trigger.')
+    parser.add_argument('input', help='specify input ntuple file.')
+    parser.add_argument('output', help='specify output ntuple file.')
+    parser.add_argument('-t', '--tree', default='TupleB0/DecayTree', help='specify tree name.')
+    parser.add_argument('-y', '--year', default='2016', help='specify year.')
+    parser.add_argument('--debug', action='store_true', help='enable debug mode.')
+    parser.add_argument('-m', '--mode', choices=['bdt', 'xgb', 'bdt_old'], default='xgb', help='specify which regressor to use.')
+    parser.add_argument('--load', default=None, help='optionally specify serialized BDT to load.')
+    parser.add_argument('--dump', default=None, help='optionally specify output to pickled BDT object.')
+    parser.add_argument('--max-depth', default=4, type=int, help='optionally specify the max_depth parameter for the BDT.')
+    parser.add_argument('--ntrees', default=300, type=int, help='optionally specify the n_estimators parameter for the BDT.')
     return parser.parse_args()
 
 
@@ -306,6 +284,11 @@ if __name__ == '__main__':
     output = gen_output_dict(input_vars, train_brs)
     output.update(dfs[-1].AsNumpy(columns=output_brs))
     output.update(config['predict'](regressor, input_vars))
+    if args.mode == 'xgb':
+        # Keep the legacy _emu_xgb output for validation tools, and always add
+        # the three production branches. The trained/loaded model is nominal.
+        output.update(run2_rdx_l0_hadron_tos_directive_gen(
+            input_vars, args.year, nominal_regressor=regressor))
     branch = 'd0_l0_hadron_tos_spd_corrected'
     if branch in output: output[branch] = np.asarray(output[branch], dtype=np.float64)
     output_df = ROOT.RDF.MakeNumpyDataFrame(output)

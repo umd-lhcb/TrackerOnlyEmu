@@ -57,6 +57,7 @@ setup(
         'scripts/run2-rdx-trg_emu.py',
         'scripts/run2-rdx-hlt1.py',
         'scripts/run2-rdx-l0_global_tis.py',
+        'scripts/run2-rdx-nspdcor_lt450.py',
         'scripts/run2-rdx-l0_hadron_tos.py',
     ],
     include_package_data=True,

@@ -7,20 +7,19 @@ import ROOT
 ROOT.PyConfig.IgnoreCommandLineOptions = True  # Don't hijack argparse!
 ROOT.PyConfig.DisableRootLogon = True  # Don't read .rootlogon.py
 
-import pickle
-
 from argparse import ArgumentParser
 from ROOT import RDataFrame
 from ROOT.RDF import RSnapshotOptions
 
-from TrackerOnlyEmu.loader import load_file
 from TrackerOnlyEmu.executor import ExecDirective as EXEC
 from TrackerOnlyEmu.executor import process_directives
 from TrackerOnlyEmu.utils import get_df_vars
 from TrackerOnlyEmu.emulation.run2_rdx import (
     run2_rdx_l0_global_tis_directive_gen,
+    run2_rdx_nspdcor_lt450_directive_gen,
     run2_rdx_hlt1_directive_gen,
     XGB_TRAIN_BRANCHES,
+    run2_rdx_l0_hadron_tos_directive_gen,
 )
 
 
@@ -34,16 +33,12 @@ def parse_input():
     parser.add_argument('output', help='specify output ntuple file.')
     parser.add_argument('-t', '--tree', default='TupleB0/DecayTree', help='specify tree name.')
     parser.add_argument('-y', '--year', default='2016', help='specify year.')
-    parser.add_argument('-c', '--adhoc_tis_correction', action='store_true', help='specify if ad-hoc L0 Global TIS correction at high B pT should be used')
-    parser.add_argument('-n', '--ntracks', action='store_true', help='specify if L0 Global TIS eff should consider nTracks for val (3D=[log(pz),log(pt),nTracks])')
+    # parser.add_argument('-c', '--adhoc_tis_correction', action='store_true', help='specify if ad-hoc L0 Global TIS correction at high B pT should be used')
+    # parser.add_argument('-n', '--ntracks', action='store_true', help='specify if L0 Global TIS eff should consider nTracks for val (3D=[log(pz),log(pt),nTracks])')
     parser.add_argument('-B', '--Bmeson', default='b0', help='specify the name of the B meson in the tree.')
-    parser.add_argument('-l', '--load', default='<triggers/l0/xgb4_nspd_corrected-2016.pickle>', help='specify the trained regressor to load.')
-    parser.add_argument('--load-nspd-uncorrected', default='<triggers/l0/xgb4-2016.pickle>', help='Also load this model and write d0_l0_hadron_tos_emu_nspd_uncorrected.')
-
-    parser.add_argument('--debug', action='store_true', help='''
-enable debug mode.
-''')
-
+    # parser.add_argument('-l', '--load', default=None, help='Override the nominal SPD-preselected model; default: year-specific xgb4_nspdcorlt450_precut model.')
+    # Both uncut-training comparison models are always evaluated for args.year.
+    parser.add_argument('--debug', action='store_true', help='enable debug mode.')
     return parser.parse_args()
 
 
@@ -54,11 +49,13 @@ enable debug mode.
 if __name__ == '__main__':
     args = parse_input()
 
-    if args.adhoc_tis_correction: print('Note: using ad-hoc correction for L0 Global TIS measurement at high B log(pT)')
-    if args.ntracks: print('Note: Using 3D eff histo in [log(pz),log(pt),nTracks] for L0 Global TIS eff')
+    # if args.adhoc_tis_correction: print('Note: using ad-hoc correction for L0 Global TIS measurement at high B log(pT)')
+    # if args.ntracks: print('Note: Using 3D eff histo in [log(pz),log(pt),nTracks] for L0 Global TIS eff')
 
     # L0Global TIS
-    directives = run2_rdx_l0_global_tis_directive_gen(args.Bmeson, args.year, args.adhoc_tis_correction, args.ntracks)
+    directives = run2_rdx_l0_global_tis_directive_gen(args.Bmeson, args.year)
+    # SPD acceptance shared by both L0 triggers
+    directives += run2_rdx_nspdcor_lt450_directive_gen(args.year)
     # HLT 1
     directives += run2_rdx_hlt1_directive_gen(args.Bmeson, args.year)
 
@@ -67,7 +64,6 @@ if __name__ == '__main__':
 
     # L0Hadron TOS
     input_vars = get_df_vars(init_frame, XGB_TRAIN_BRANCHES)
-    regressor = pickle.load(open(load_file(args.load), 'rb'))
 
     # Collect the previous output branches
     hlt1_brs = [
@@ -81,17 +77,14 @@ if __name__ == '__main__':
     out_tmp = {k+'_tmp': v for k, v in out_np.items()}
     # Preserve nominal TIS and the year-specific correction outputs.
     l0global_tis_br = f'{args.Bmeson}_l0_global_tis_emu'
-    l0global_brs = [l0global_tis_br, l0global_tis_br + '_tisbool_ntr_ratio_wtis', 'nspdlt450_ntr_eff'] #, l0global_tis_br + '_tisbool_nspdlt450_ntr_ratio_wtis']
-    out_tmp.update(dfs[-1].AsNumpy(columns=l0global_brs))
-    # Add the L0Hadron TOS branch
-    out_tmp['d0_l0_hadron_tos_emu'] = regressor.predict_proba(input_vars).T[1]
-    l0hadron_brs = ['d0_l0_hadron_tos_emu']
-    if args.load_nspd_uncorrected:
-        with open(load_file(args.load_nspd_uncorrected), 'rb') as model_file:
-            uncorrected_regressor = pickle.load(model_file)
-        uncorrected_br = 'd0_l0_hadron_tos_emu_nspd_uncorrected'
-        out_tmp[uncorrected_br] = uncorrected_regressor.predict_proba(input_vars).T[1]
-        l0hadron_brs.append(uncorrected_br)
+    l0global_brs = [l0global_tis_br + '_no_cor', l0global_tis_br + '_pt_cor', l0global_tis_br + '_pt_ntr_cor'] #, l0global_tis_br + '_tisbool_nspdlt450_ntr_ratio_wtis']
+    # Old TIS-specific SPD output 'nspdlt450_ntr_eff' is retired.
+    shared_brs = ['nspdcor_lt450_eff']
+    out_tmp.update(dfs[-1].AsNumpy(columns=l0global_brs + shared_brs))
+    # Always retain all three year-specific L0Hadron predictions.
+    l0hadron_predictions = run2_rdx_l0_hadron_tos_directive_gen(input_vars, args.year)
+    out_tmp.update(l0hadron_predictions)
+    l0hadron_brs = list(l0hadron_predictions)
     out_df = ROOT.RDF.MakeNumpyDataFrame(out_tmp)
 
     directives_post = [
@@ -99,14 +92,13 @@ if __name__ == '__main__':
         for br in hlt1_brs
     ] + [
         EXEC('Define', 'runNumber', 'static_cast<UInt_t>(runNumber_tmp)', True),
-        EXEC('Define', 'eventNumber',
-             'static_cast<ULong64_t>(eventNumber_tmp)', True),
+        EXEC('Define', 'eventNumber', 'static_cast<ULong64_t>(eventNumber_tmp)', True),
     ]
 
     # Output
     out_dfs, output_br_names = process_directives(directives_post, out_df)
     for br in l0hadron_brs: output_br_names.push_back(br)
-    for br in l0global_brs: output_br_names.push_back(br)
+    for br in l0global_brs + shared_brs: output_br_names.push_back(br)
 
     output_opts = RSnapshotOptions()
     output_opts.fMode = 'UPDATE'

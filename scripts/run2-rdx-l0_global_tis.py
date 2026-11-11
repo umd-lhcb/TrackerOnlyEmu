@@ -22,33 +22,14 @@ from TrackerOnlyEmu.emulation.run2_rdx import \
 #################################
 
 def parse_input():
-    parser = ArgumentParser(
-        description='Emulate L0Global TIS trigger.')
-
-    parser.add_argument('input', help='''
-specify input ntuple file.
-''')
-
-    parser.add_argument('output', help='''
-specify output ntuple file.
-''')
-
-    parser.add_argument('-t', '--tree', default='TupleB0/DecayTree', help='''
-specify tree name.
-''')
-
-    parser.add_argument('-y', '--year', default='2016', help='''
-specify year.''')
-    
-    parser.add_argument('-c', '--adhoc_tis_correction', action='store_true', help='specify if ad-hoc L0 Global TIS correction at high B pT should be used')
-
-    parser.add_argument('-B', '--Bmeson', default='b0', help='''
-specify the name of the B meson in the tree.''')
-
-    parser.add_argument('--debug', action='store_true', help='''
-enable debug mode.
-''')
-
+    parser = ArgumentParser(description='Emulate L0Global TIS trigger.')
+    parser.add_argument('input', help='specify input ntuple file.')
+    parser.add_argument('output', help='specify output ntuple file.')
+    parser.add_argument('-t', '--tree', default='TupleB0/DecayTree', help='specify tree name.')
+    parser.add_argument('-y', '--year', default='2016', help='specify year.')
+    # parser.add_argument('-c', '--adhoc_tis_correction', action='store_true', help='specify if ad-hoc L0 Global TIS correction at high B pT should be used')
+    parser.add_argument('-B', '--Bmeson', default='b0', help='specify the name of the B meson in the tree.')
+    parser.add_argument('--debug', action='store_true', help='enable debug mode.')
     return parser.parse_args()
 
 
@@ -59,9 +40,9 @@ enable debug mode.
 if __name__ == '__main__':
     args = parse_input()
 
-    if args.adhoc_tis_correction: print(f'Note: using ad-hoc correction for L0 Global TIS measurement at high B log(pT)')
+    # if args.adhoc_tis_correction: print(f'Note: using ad-hoc correction for L0 Global TIS measurement at high B log(pT)')
 
-    directives = run2_rdx_l0_global_tis_directive_gen(args.Bmeson, args.year, args.adhoc_tis_correction)
+    directives = run2_rdx_l0_global_tis_directive_gen(args.Bmeson, args.year)
 
     directives_debug = [
         # Reference variables

@@ -5,6 +5,8 @@
 # Last Change: Wed Dec 15, 2021 at 06:08 PM +0100
 
 import json
+import pickle
+from pathlib import Path
 from itertools import combinations
 from ROOT import gInterpreter
 
@@ -46,16 +48,46 @@ XGB_TRAIN_BRANCHES = [
 ]
 
 
+def run2_rdx_l0_hadron_tos_directive_gen(input_vars, year, nominal_path=None, nominal_regressor=None):
+    """Return nominal SPD-conditioned TOS and both uncut-training comparisons."""
+    year = str(year)
+    if year not in ('2016', '2017', '2018'):
+        raise ValueError(f'Unsupported L0Hadron model year: {year}')
+    if nominal_path is not None and nominal_regressor is not None:
+        raise ValueError('Specify a nominal model path or regressor, not both')
+    models = [
+        ('d0_l0_hadron_tos_emu', nominal_path or f'<triggers/l0/xgb4_nspdcorlt450_precut-{year}.pickle>'),
+        ('d0_l0_hadron_tos_emu_nspd_uncorrected', f'<triggers/l0/xgb4-{year}.pickle>'),
+        ('d0_l0_hadron_tos_emu_nspd_corrected', f'<triggers/l0/xgb4_nspd_corrected-{year}.pickle>'),
+    ]
+    resolved = [(branch, Path(load_file(path))) for branch, path in models
+                if branch != 'd0_l0_hadron_tos_emu' or nominal_regressor is None]
+    for branch, path in resolved:
+        if not path.is_file():
+            raise FileNotFoundError(f'Missing {year} L0Hadron model for {branch}: {path}')
+    predictions = {}
+    if nominal_regressor is not None:
+        predictions['d0_l0_hadron_tos_emu'] = nominal_regressor.predict_proba(input_vars).T[1]
+    for branch, path in resolved:
+        print(f'L0Hadron {year}: {branch} from {path}', flush=True)
+        with path.open('rb') as model_file:
+            regressor = pickle.load(model_file)
+        predictions[branch] = regressor.predict_proba(input_vars).T[1]
+    return predictions
+
+
 #################
 # L0 Global TIS #
 #################
 # Main #########################################################################
 
-def run2_rdx_l0_global_tis_directive_gen(Bmeson, year, adhoc_tis_correction=True, ntracks=False):
+def run2_rdx_l0_global_tis_directive_gen(Bmeson, year):
+    load_cpp('<triggers/l0/run2-NTracksCorrection.h>')
     load_cpp('<triggers/l0/run2-L0GlobalTIS.h>')
 
-    if not ntracks: gInterpreter.Declare('auto histoResp = new TFile("{}");'.format(load_file('<triggers/l0/l0_tis_efficiency.root>')))
-    else: gInterpreter.Declare('auto histoResp = new TFile("{}");'.format(load_file('<triggers/l0/l0_tis_efficiency3D.root>')))
+    gInterpreter.Declare('auto histoResp = new TFile("{}");'.format(load_file('<triggers/l0/l0_tis_efficiency.root>')))
+    # 3D measurement retired:
+    # gInterpreter.Declare('auto histoResp = new TFile("{}");'.format(load_file('<triggers/l0/l0_tis_efficiency3D.root>')))
 
     epilogue = '''
     auto hResp = readL0GlobalTisResp(histoResp);
@@ -67,29 +99,59 @@ def run2_rdx_l0_global_tis_directive_gen(Bmeson, year, adhoc_tis_correction=True
     for name, filename in [
         ('hTisNTracksCorrection', f'tisbool_ratio_wtis-ntracks-nspdcorlt450-{year}.root'),
         # ('hTisNspd450Correction', f'tisbool_nspdlt450_ratio_wtis-ntracks-{year}.root'),
-        ('hNspd450Efficiency', f'nspdlt450_dstmunu-ntracks-{year}.root'),
+        # ('hNspd450Efficiency', f'nspdlt450_dstmunu-ntracks-{year}.root'),
     ]:
         path = load_file('<triggers/l0/' + filename + '>')
         gInterpreter.Declare('auto ' + name + ' = readL0NTracksCorrection(' + json.dumps(str(path)) + ');')
     nominal = '{}_l0_global_tis_emu'.format(Bmeson)
+    no_high_pt = f'l0GlobalTisTriggerEmu({Bmeson}_pz, {Bmeson}_pt, {year}, hResp, false)'
+    high_pt = f'l0GlobalTisTriggerEmu({Bmeson}_pz, {Bmeson}_pt, {year}, hResp, true)'
+    # no_high_pt = f'l0GlobalTisTrigger3DEmu({Bmeson}_pz, {Bmeson}_pt, ntracks, {year}, hResp, false)'
     corrections = [
-        EXEC('Define', nominal + '_tisbool_ntr_ratio_wtis', nominal + ' * l0NTracksCorrection(nTracks, hTisNTracksCorrection)', True),
+        EXEC('Define', nominal + '_no_cor', no_high_pt, True),
+        EXEC('Define', nominal + '_pt_cor', high_pt, True),
+        EXEC('Define', nominal + '_pt_ntr_cor', nominal + '_pt_cor * l0NTracksCorrection(nTracks, hTisNTracksCorrection)', True),
         # EXEC('Define', nominal + '_tisbool_nspdlt450_ntr_ratio_wtis', nominal + ' * l0NTracksCorrection(nTracks, hTisNspd450Correction)', True),
-        EXEC('Define', 'nspdlt450_ntr_eff', 'l0NTracksCorrection(nTracks, hNspd450Efficiency)', True),
+        # EXEC('Define', 'nspdlt450_ntr_eff', 'l0NTracksCorrection(nTracks, hNspd450Efficiency)', True),
     ]
 
     # NOTE: For RDX, we use TRUE B momentum due to missing neutrinos
-    if not ntracks: return [
+    return [
         EXEC('Define', '{}_pz'.format(Bmeson), '{}_TRUEP_Z'.format(Bmeson), True),
         EXEC('Define', '{}_pt'.format(Bmeson), '{}_TRUEPT'.format(Bmeson), True),
-        EXEC('Define', '{}_l0_global_tis_emu'.format(Bmeson), 'l0GlobalTisTriggerEmu({}, {}, {}, hResp, {})'.format('{}_pz'.format(Bmeson), '{}_pt'.format(Bmeson), year, str(adhoc_tis_correction).lower()), True),
     ] + corrections
-    else: return [
-        EXEC('Define', '{}_pz'.format(Bmeson), '{}_TRUEP_Z'.format(Bmeson), True),
-        EXEC('Define', '{}_pt'.format(Bmeson), '{}_TRUEPT'.format(Bmeson), True),
-        EXEC('Define', 'ntracks', 'nTracks', True),
-        EXEC('Define', '{}_l0_global_tis_emu'.format(Bmeson), 'l0GlobalTisTrigger3DEmu({}, {}, {}, {}, hResp, {})'.format('{}_pz'.format(Bmeson), '{}_pt'.format(Bmeson), 'ntracks', year, str(adhoc_tis_correction).lower()), True),
-    ] + corrections
+    # Retired 3D directive sequence:
+    # else: return [
+    # EXEC('Define', '{}_pz'.format(Bmeson), '{}_TRUEP_Z'.format(Bmeson), True),
+    # EXEC('Define', '{}_pt'.format(Bmeson), '{}_TRUEPT'.format(Bmeson), True),
+    # EXEC('Define', 'ntracks', 'nTracks', True),
+    # EXEC('Define', nominal + '_pt_cor', 'l0GlobalTisTrigger3DEmu({}, {}, {}, {}, hResp, {})'.format('{}_pz'.format(Bmeson), '{}_pt'.format(Bmeson), 'ntracks', year, str(adhoc_tis_correction).lower()), True),
+    # ] + corrections
+
+
+
+##################
+# SPD acceptance #
+##################
+
+def run2_rdx_nspdcor_lt450_directive_gen(
+        year, map_file='<triggers/l0/nspdhits_corrected_lt450_Dstmunu_FS_eff_notrigger.root>'):
+    """SPD acceptance shared by both L0 triggers, independent of TIS emulation.
+
+    Interpolate nTracks bin centers and hold endpoint values outside their
+    range, including under/overflow, as for the nominal TIS nTracks lookup.
+    """
+    year = str(year)
+    if year not in ('2016', '2017', '2018'):
+        raise ValueError(f'Unsupported SPD efficiency year: {year}')
+    load_cpp('<triggers/l0/run2-NTracksCorrection.h>')
+    path = load_file(map_file)
+    name = 'hNspdCorLt450Efficiency' + year
+    histogram = 'nspdhits_corrected_lt450_' + year
+    gInterpreter.Declare('auto ' + name + ' = readL0NTracksCorrection('
+                         + json.dumps(str(path)) + ', ' + json.dumps(histogram) + ');')
+    return [EXEC('Define', 'nspdcor_lt450_eff',
+                 'l0NTracksCorrection(nTracks, ' + name + ')', True)]
 
 
 #########
