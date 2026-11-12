@@ -79,12 +79,12 @@ REGRESSOR_CONFIG['xgb'] = {
     'predict': lambda xgb, input_vars: {
         'd0_l0_hadron_tos_emu_xgb': xgb.predict_proba(input_vars).T[1],
     },
-    'dir': lambda args: [],
-    'dir_debug': lambda args: [
-        # Reference variables
+    'dir': lambda args: [
+        # Training target
         EXEC('Define', 'd0_l0_hadron_tos',
              'static_cast<Double_t>(d0_L0HadronDecision_TOS)', True),
-
+    ],
+    'dir_debug': lambda args: [
         # Global variables
         EXEC('Define', 'nspdhits', 'NumSPDHits', True),
 
